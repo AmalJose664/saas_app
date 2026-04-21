@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import '@repo/tailwind-config/globals.css'
 
 import { Inter } from 'next/font/google';
 export const metadata: Metadata = {

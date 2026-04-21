@@ -1,9 +1,0 @@
-{
-	"name": "@myapp/prisma",
-	"version": "0.0.1",
-	"main": "./src/client.ts",
-	"dependencies": {
-		"@prisma/client": "latest",
-		"prisma": "latest"
-	}
-}

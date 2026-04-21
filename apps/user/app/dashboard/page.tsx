@@ -26,7 +26,7 @@ export default function DashboardPage() {
 	return (
 		<div>
 			<h1>Welcome, {user?.email}</h1>
-			<button onClick={handleLogout}>Logout</button>
+			<button onClick={handleLogout} className='text-red-500'>Logout</button>
 		</div>
 	)
 }
