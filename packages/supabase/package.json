@@ -1,0 +1,9 @@
+{
+	"name": "@myapp/supabase",
+	"version": "0.0.1",
+	"main": "./src/client.ts",
+	"dependencies": {
+		"@supabase/supabase-js": "latest",
+		"@supabase/ssr": "latest"
+	}
+}
