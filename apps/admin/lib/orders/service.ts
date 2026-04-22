@@ -1,6 +1,15 @@
 import { dbGetOrders, dbGetOrdersCount, dbGetOrdersRevenue } from './repository'
 
-
+/**
+ * Orders Service
+ *
+ * Business logic for orders. Responsibilities:
+ * - Converting paise → ₹ for display (amount_paise / 100)
+ * - Aggregating total revenue across all orders
+ * - Formatting revenue as a localised ₹ string (en-IN)
+ *
+ * Orders are read-only from the admin — no mutation actions exist here.
+ */
 
 export async function getOrders(opts: { limit?: number; userId?: string } = {}) {
 	const { data, error } = await dbGetOrders(opts)

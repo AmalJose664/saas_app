@@ -6,11 +6,18 @@ import {
 } from './repository'
 import type { TablesUpdate } from '@repo/database'
 
-export const USERS_PAGE_SIZE = 10
-
 /**
- * Service — business logic for users/profiles.
+ * Users Service
+ *
+ * Business logic for user/profile management. Responsibilities:
+ * - Pagination calculation (page → from/to range)
+ * - Appending updated_at on every update
+ * - Wrapping results in { success, data } | { success, error }
+ *
+ * USERS_PAGE_SIZE controls how many rows are returned per page.
  */
+
+export const USERS_PAGE_SIZE = 10
 
 export async function getUsersPaginated(opts: { search: string; page: number }) {
 	const currentPage = Math.max(1, opts.page)

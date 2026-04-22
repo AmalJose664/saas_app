@@ -1,7 +1,11 @@
 import { dbGetSubscriptions, dbGetSubscriptionByUserId } from './repository'
 
 /**
- * Service — business logic for subscriptions.
+ * Subscriptions Service
+ *
+ * Business logic for subscriptions. Subscriptions are read-only from
+ * the admin — status changes are handled by Razorpay webhooks, not
+ * manual admin actions.
  */
 
 export async function getAllSubscriptions() {

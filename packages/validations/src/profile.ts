@@ -1,5 +1,13 @@
 import { z } from 'zod'
 
+/**
+ * Profile validation schemas
+ *
+ * avatar_url accepts a valid URL or an empty string.
+ * Empty string is allowed so users can clear their avatar — null/undefined
+ * means "not provided", '' means "explicitly removed".
+ */
+
 export const updateProfileSchema = z.object({
 	full_name: z
 		.string()

@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+/**
+ * Plan validation schemas
+ *
+ * Amount rule: the UI accepts ₹ (e.g. 499). The service layer converts
+ * to paise (×100) before writing to the DB. Schemas work in ₹.
+ *
+ * razorpay_plan_id is optional — only needed when linking to an existing
+ * plan in the Razorpay dashboard.
+ */
+
 const PLAN_INTERVALS = ['daily', 'weekly', 'monthly', 'yearly'] as const
 
 export const planSchema = z.object({

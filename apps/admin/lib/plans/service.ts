@@ -7,6 +7,15 @@ import {
 } from './repository'
 import type { CreatePlanInput, UpdatePlanInput } from '@repo/validations'
 
+/**
+ * Plans Service
+ *
+ * Business logic for subscription plans. Responsibilities:
+ * - Converting ₹ amounts to paise before writing to the DB (×100)
+ * - Wrapping all results in { success, data } | { success, error }
+ *
+ * Called by lib/plans/actions.ts (mutations) and Server Components (reads).
+ */
 
 export type ServiceResult<T> =
 	| { success: true; data: T }

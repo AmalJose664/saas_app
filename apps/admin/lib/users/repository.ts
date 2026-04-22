@@ -2,7 +2,11 @@ import { createClient } from '@myapp/supabase/server'
 import type { TablesUpdate } from '@repo/database'
 
 /**
- * Repository — raw Supabase access for the profiles table only.
+ * Users Repository
+ *
+ * Raw Supabase access for the `profiles` table. No business logic here.
+ * Search uses case-insensitive ILIKE on the email column.
+ * Called only by lib/users/service.ts.
  */
 
 export async function dbGetUsersPaginated(opts: {

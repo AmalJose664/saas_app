@@ -2,8 +2,11 @@ import { getUsersCount } from '../users/service'
 import { getOrdersCount, getFormattedRevenue } from '../orders/service'
 
 /**
- * Service — aggregates stats for the dashboard overview.
- * Runs all queries in parallel for performance.
+ * Dashboard Service
+ *
+ * Aggregates stats from users, orders, and revenue for the overview page.
+ * All three queries run in parallel via Promise.all — do not await them
+ * sequentially or you'll add unnecessary latency to the dashboard load.
  */
 
 export interface DashboardStats {

@@ -3,6 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { updateUser } from './service'
 
+/**
+ * Users Server Actions
+ *
+ * Entry point for user mutations from client components.
+ * Currently exposes one action: toggling a user's active status.
+ * Revalidates both the dashboard list and the individual user page.
+ */
+
 export type UserActionResult =
 	| { success: true }
 	| { success: false; error: string }

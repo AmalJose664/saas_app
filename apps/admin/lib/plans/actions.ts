@@ -5,6 +5,16 @@ import { redirect } from 'next/navigation'
 import { createPlanSchema, updatePlanSchema } from '@repo/validations'
 import { createPlan, updatePlan, deletePlan } from './service'
 
+/**
+ * Plans Server Actions
+ *
+ * The only entry point for plan mutations from client components.
+ * Each action: validates FormData with Zod → calls service → revalidates cache.
+ *
+ * Used with useActionState() in form components.
+ * ActionResult is returned to the client to show field-level errors.
+ */
+
 export type ActionResult =
 	| { success: true }
 	| { success: false; error: string; fieldErrors?: Record<string, string> }

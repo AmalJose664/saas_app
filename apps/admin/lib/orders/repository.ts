@@ -1,5 +1,12 @@
 import { createClient } from '@myapp/supabase/server'
 
+/**
+ * Orders Repository
+ *
+ * Raw Supabase access for the `orders` table. No business logic here.
+ * Joins with `profiles` to get customer name/email for display.
+ * Called only by lib/orders/service.ts.
+ */
 
 export async function dbGetOrders(opts: { limit?: number; userId?: string } = {}) {
 	const supabase = await createClient()

@@ -1,7 +1,11 @@
 import { createClient } from '@myapp/supabase/server'
 
 /**
- * Repository — raw Supabase access for the subscriptions table only.
+ * Subscriptions Repository
+ *
+ * Raw Supabase access for the `subscriptions` table. No business logic here.
+ * Joins with `profiles` and `plan` so callers get subscriber and plan info
+ * in a single query. Called only by lib/subscriptions/service.ts.
  */
 
 export async function dbGetSubscriptions() {

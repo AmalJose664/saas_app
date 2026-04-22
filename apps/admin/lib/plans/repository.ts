@@ -1,7 +1,13 @@
 import { createClient } from '@myapp/supabase/server'
 import type { TablesInsert, TablesUpdate } from '@repo/database'
 
-
+/**
+ * Plans Repository
+ *
+ * Raw Supabase access for the `plan` table. No business logic here.
+ * All functions return the raw Supabase response and are called only
+ * by lib/plans/service.ts.
+ */
 
 export async function dbGetAllPlans() {
 	const supabase = await createClient()
