@@ -28,6 +28,25 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 
 ---
 
+## Latest Updates (April 2026)
+
+### Critical Fixes
+- **Login page:** Password visibility toggle (eye icon), loading spinner, error banners, removed all `console.log`
+- **ToggleUserActive.tsx:** Fixed dead `return null` bug — button now renders correctly
+- **next.config.js:** Fixed typo `@repo/validation` → `@repo/validations`, converted to ES module syntax for Next.js 16
+- **not-authorized page:** Professional styled page with lock icon and navigation links
+- **plans/[id]:** Refactored from raw Supabase queries to service layer (`getPlanById`)
+- **NavCard.tsx:** Replaced `any` with proper `NavCardProps` TypeScript interface
+- **Root page (`/`):** Converted to server component — redirects authenticated users to `/dashboard`
+- **Build fixes:** Fixed Zod validation syntax for newer version, fixed `JSX.Element` namespace error
+
+### Documentation
+- Added comprehensive JSDoc to all pages, components, middleware, and service files
+- Each file includes ASCII architecture flow diagrams showing the call chain
+- Inline section comments (`// ─── Section ───`) for visual grouping
+
+---
+
 ## Routes
 
 | Route | Description | Type |
