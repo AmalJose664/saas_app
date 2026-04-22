@@ -1,7 +1,8 @@
 export const revalidate = 0;
 import Link from 'next/link';
-import DeletePlanButton from './DeletePlanButton';
+
 import { createClient } from '@myapp/supabase/server';
+import DeletePlanButton from '../../components/DeletePlan';
 
 export default async function ManagePlans() {
 

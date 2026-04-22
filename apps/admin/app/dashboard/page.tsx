@@ -1,19 +1,6 @@
-'use client'
-import { createClient } from '@myapp/supabase/client'
-import { useRouter } from 'next/navigation'
+import Logout from '../../components/Logout'
 import Orders from './Orders'
-
 export default function Dashboard() {
-	const supabase = createClient()
-	const router = useRouter()
-
-
-
-	const handleLogout = async () => {
-		await supabase.auth.signOut()
-		router.refresh()
-		router.push('/login')
-	}
 
 	return (
 		<div className="flex h-screen bg-gray-100">
@@ -24,21 +11,14 @@ export default function Dashboard() {
 				<nav className="flex-1 p-4 space-y-2">
 					<a href="#" className="block py-2.5 px-4 rounded bg-slate-800">Dashboard</a>
 					<a href="#" className="block py-2.5 px-4 rounded hover:bg-slate-800 transition">Users</a>
-					<a href="#" className="block py-2.5 px-4 rounded hover:bg-slate-800 transition">Settings</a>
 				</nav>
 			</aside>
 
 			<div className="flex-1 flex flex-col overflow-hidden">
 				<header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8">
 					<h2 className="text-xl font-semibold text-gray-800">Overview</h2>
+					<Logout />
 
-					<button
-						onClick={handleLogout}
-						className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-						Logout
-					</button>
 				</header>
 
 				<main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
