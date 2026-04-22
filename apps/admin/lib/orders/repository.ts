@@ -6,7 +6,7 @@ export async function dbGetOrders(opts: { limit?: number; userId?: string } = {}
 
 	let query = supabase
 		.from('orders')
-		.select('*, profiles(full_name, email)')
+		.select('*')
 		.order('created_at', { ascending: false })
 
 	if (opts.userId) {
