@@ -1,6 +1,6 @@
 import { createClient } from '@myapp/supabase/server';
 import Link from 'next/link';
-import DeletePlanButton from '../../../components/DeletePlan';
+import DeletePlanButton from '../../../../components/DeletePlan';
 interface Plan {
 	id: string
 	name: string

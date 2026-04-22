@@ -1,8 +1,7 @@
-export const revalidate = 0;
 import Link from 'next/link';
 
 import { createClient } from '@myapp/supabase/server';
-import DeletePlanButton from '../../components/DeletePlan';
+import DeletePlanButton from '../../../components/DeletePlan';
 
 export default async function ManagePlans() {
 
@@ -55,8 +54,11 @@ export default async function ManagePlans() {
 							</div>
 
 							<div className="mt-6 pt-4 border-t border-slate-50 flex gap-3">
-								<Link href={"/plans/edit/" + plan.id} className="flex-1 text-sm font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
+								<Link href={"/plans/edit/" + plan.id} className="flex-1 text-center text-sm font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
 									Edit
+								</Link>
+								<Link href={"/plans/" + plan.id} className="flex-1 text-sm text-center font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
+									View
 								</Link>
 								<DeletePlanButton planId={plan.id} />
 							</div>

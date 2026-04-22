@@ -32,12 +32,13 @@ export default function ConfirmationModal({
 		: "bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400";
 
 	return (
+
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
 			<div
-				className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 text-left"
+				className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-200"
 				onClick={(e) => e.stopPropagation()}
 			>
-				<div>
+				<div className="">
 					<h3 className="text-lg font-bold text-slate-900">{title}</h3>
 					<p className="text-slate-500 mt-2 text-sm leading-relaxed">
 						{subtext}
@@ -55,7 +56,7 @@ export default function ConfirmationModal({
 					<button
 						disabled={isLoading}
 						onClick={onConfirm}
-						className={`flex-1 px-4 py-2 text-sm font-semibold text-white rounded-lg transition ${confirmButtonStyles}`}
+						className={`flex-1 px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition disabled:opacity-50 ${confirmButtonStyles}`}
 					>
 						{isLoading ? 'Processing...' : confirmText}
 					</button>

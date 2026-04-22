@@ -1,6 +1,6 @@
-
 "use client"
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { createClient } from '@myapp/supabase';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '@repo/ui/ConfirmModel';
@@ -34,17 +34,43 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
 				Delete
 			</button>
 
-			<ConfirmationModal
-				isOpen={isOpen}
-				title="Delete Plan?"
-				subtext="This action is permanent and will remove this plan from your dashboard. Continue?"
-				confirmText="Delete"
-				cancelText="Go Back"
-				variant="danger"
-				isLoading={isDeleting}
-				onCancel={() => setIsOpen(false)}
-				onConfirm={handleDelete}
-			/>
+			{isOpen && createPortal(
+				<div
+					style={{
+						position: 'fixed',
+						inset: 0,
+						zIndex: 9999,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						backgroundColor: 'rgba(0, 0, 0, 0.5)',
+					}}
+					onClick={() => setIsOpen(false)}
+				>
+					<div
+						onClick={(e) => e.stopPropagation()}
+						style={{
+							position: 'relative',
+							zIndex: 10000,
+							maxWidth: '480px',
+							width: '100%',
+						}}
+					>
+						<ConfirmationModal
+							isOpen={isOpen}
+							title="Delete Plan?"
+							subtext="This action is permanent and will remove this plan from your dashboard. Continue?"
+							confirmText="Delete"
+							cancelText="Go Back"
+							variant="danger"
+							isLoading={isDeleting}
+							onCancel={() => setIsOpen(false)}
+							onConfirm={handleDelete}
+						/>
+					</div>
+				</div>,
+				document.body
+			)}
 		</>
 	);
 }
