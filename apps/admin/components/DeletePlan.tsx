@@ -1,30 +1,30 @@
-"use client"
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
-import { createClient } from '@myapp/supabase';
-import { useRouter } from 'next/navigation';
-import ConfirmationModal from '@repo/ui/ConfirmModel';
-import { toast } from 'sonner';
+'use client'
+
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
+import { useTransition } from 'react'
+import ConfirmationModal from '@repo/ui/ConfirmModel'
+import { toast } from 'sonner'
+import { deletePlanAction } from '../lib/plans/actions'
 
 export default function DeletePlanButton({ planId }: { planId: string }) {
-	const supabase = createClient();
-	const router = useRouter();
+	const router = useRouter()
+	const [isOpen, setIsOpen] = useState(false)
+	const [isPending, startTransition] = useTransition()
 
-	const [isOpen, setIsOpen] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
-
-	const handleDelete = async () => {
-		setIsDeleting(true);
-		const { error } = await supabase.from('plan').delete().eq('id', planId);
-
-		if (error) {
-			toast.error(error.message);
-			setIsDeleting(false);
-			setIsOpen(false);
-		} else {
-			router.refresh();
-		}
-	};
+	const handleDelete = () => {
+		startTransition(async () => {
+			const result = await deletePlanAction(planId)
+			if (!result.success) {
+				toast.error(result.error)
+			} else {
+				toast.success('Plan deleted.')
+				setIsOpen(false)
+				router.refresh()
+			}
+		})
+	}
 
 	return (
 		<>
@@ -50,12 +50,7 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
 				>
 					<div
 						onClick={(e) => e.stopPropagation()}
-						style={{
-							position: 'relative',
-							zIndex: 10000,
-							maxWidth: '480px',
-							width: '100%',
-						}}
+						style={{ position: 'relative', zIndex: 10000, maxWidth: '480px', width: '100%' }}
 					>
 						<ConfirmationModal
 							isOpen={isOpen}
@@ -64,7 +59,7 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
 							confirmText="Delete"
 							cancelText="Go Back"
 							variant="danger"
-							isLoading={isDeleting}
+							isLoading={isPending}
 							onCancel={() => setIsOpen(false)}
 							onConfirm={handleDelete}
 						/>
@@ -73,5 +68,5 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
 				document.body
 			)}
 		</>
-	);
+	)
 }

@@ -1,58 +1,42 @@
-import { createClient } from '@myapp/supabase/server';
-import Link from 'next/link';
-import UsersSearchInput from './UsersSearchInput';
-
-const PAGE_SIZE = 10;
+import Link from 'next/link'
+import { getUsersPaginated } from '../../../../lib/users/service'
+import UsersSearchInput from './UsersSearchInput'
 
 interface UsersTableProps {
-	search?: string;
-	page?: number;
+	search?: string
+	page?: number
 }
 
 export default async function UsersTable({ search = '', page = 1 }: UsersTableProps) {
-	const supabase = await createClient();
+	const result = await getUsersPaginated({ search, page })
 
-	const currentPage = Math.max(1, page);
-	const from = (currentPage - 1) * PAGE_SIZE;
-	const to = from + PAGE_SIZE - 1;
-
-	let query = supabase
-		.from('profiles')
-		.select('*', { count: 'exact' })
-		.order('created_at', { ascending: false })
-		.range(from, to);
-
-	if (search.trim()) {
-		query = query.ilike('email', `%${search.trim()}%`);
-	}
-
-	const { data: profiles, error, count } = await query;
-
-	const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE);
-
-	if (error) {
+	if (!result.success) {
 		return (
 			<div className="p-6 bg-red-50 border border-red-200 rounded-lg text-red-600">
-				<p className="font-semibold">Error loading profiles</p>
-				<p className="text-sm">{error.message}</p>
+				<p className="font-semibold">Error loading users</p>
+				<p className="text-sm">{result.error}</p>
 			</div>
-		);
+		)
 	}
+
+	const { data: profiles, count, totalPages, currentPage } = result
 
 	return (
 		<div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
+			{/* Header */}
 			<div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
 				<div>
 					<h3 className="text-lg font-semibold text-gray-800">User Directory</h3>
 					<p className="text-xs text-gray-500">
-						{count ?? 0} registered {(count ?? 0) === 1 ? 'user' : 'users'}
+						{count} registered {count === 1 ? 'user' : 'users'}
 						{search ? ` matching "${search}"` : ''}
 					</p>
 				</div>
 				<UsersSearchInput defaultValue={search} />
 			</div>
 
+			{/* Table */}
 			<div className="overflow-x-auto">
 				<table className="w-full text-left border-collapse">
 					<thead>
@@ -61,11 +45,11 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 							<th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Role</th>
 							<th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
 							<th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Joined Date</th>
-							<th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Settings</th>
+							<th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-gray-100">
-						{profiles?.map((profile) => (
+						{profiles.map((profile) => (
 							<tr key={profile.id} className="hover:bg-slate-50/50 transition-colors group">
 								<td className="px-6 py-4">
 									<div className="flex items-center gap-4">
@@ -88,14 +72,14 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 								</td>
 								<td className="px-6 py-4">
 									<div className="flex items-center gap-2">
-										<div className={`w-2 h-2 rounded-full ${profile.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></div>
+										<div className={`w-2 h-2 rounded-full ${profile.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
 										<span className="text-sm font-medium text-gray-700">
-											{profile.is_active ? 'Active' : 'Offline'}
+											{profile.is_active ? 'Active' : 'Inactive'}
 										</span>
 									</div>
 								</td>
 								<td className="px-6 py-4 text-sm text-gray-500 tabular-nums">
-									{new Date(profile.created_at).toLocaleDateString('en-US', {
+									{new Date(profile.created_at).toLocaleDateString('en-IN', {
 										month: 'short',
 										day: 'numeric',
 										year: 'numeric',
@@ -103,7 +87,7 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 								</td>
 								<td className="px-6 py-4 text-right">
 									<Link
-										href={'/dashboard/users/' + profile.id}
+										href={`/dashboard/users/${profile.id}`}
 										className="text-slate-400 hover:text-blue-600 font-semibold text-xs uppercase tracking-tighter transition-colors"
 									>
 										Manage
@@ -116,7 +100,7 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 			</div>
 
 			{/* Empty state */}
-			{profiles?.length === 0 && (
+			{profiles.length === 0 && (
 				<div className="p-20 text-center">
 					<p className="text-gray-400 italic">
 						{search ? `No users found matching "${search}".` : 'No users found in the system.'}
@@ -131,37 +115,24 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 						Page {currentPage} of {totalPages}
 					</p>
 					<div className="flex items-center gap-2">
-						<PaginationLink
-							href={buildHref(search, currentPage - 1)}
-							disabled={currentPage <= 1}
-							label="← Prev"
-						/>
+						<PaginationLink href={buildHref(search, currentPage - 1)} disabled={currentPage <= 1} label="← Prev" />
 						{Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-							<PaginationLink
-								key={p}
-								href={buildHref(search, p)}
-								active={p === currentPage}
-								label={String(p)}
-							/>
+							<PaginationLink key={p} href={buildHref(search, p)} active={p === currentPage} label={String(p)} />
 						))}
-						<PaginationLink
-							href={buildHref(search, currentPage + 1)}
-							disabled={currentPage >= totalPages}
-							label="Next →"
-						/>
+						<PaginationLink href={buildHref(search, currentPage + 1)} disabled={currentPage >= totalPages} label="Next →" />
 					</div>
 				</div>
 			)}
 		</div>
-	);
+	)
 }
 
 function buildHref(search: string, page: number) {
-	const params = new URLSearchParams();
-	params.set('tab', 'users');
-	if (search) params.set('search', search);
-	if (page > 1) params.set('page', String(page));
-	return `/dashboard?${params.toString()}`;
+	const params = new URLSearchParams()
+	params.set('tab', 'users')
+	if (search) params.set('search', search)
+	if (page > 1) params.set('page', String(page))
+	return `/dashboard?${params.toString()}`
 }
 
 function PaginationLink({
@@ -170,17 +141,17 @@ function PaginationLink({
 	active = false,
 	disabled = false,
 }: {
-	href: string;
-	label: string;
-	active?: boolean;
-	disabled?: boolean;
+	href: string
+	label: string
+	active?: boolean
+	disabled?: boolean
 }) {
 	if (disabled) {
 		return (
 			<span className="px-3 py-1.5 text-xs rounded-md text-gray-300 cursor-not-allowed select-none">
 				{label}
 			</span>
-		);
+		)
 	}
 	return (
 		<Link
@@ -192,5 +163,5 @@ function PaginationLink({
 		>
 			{label}
 		</Link>
-	);
+	)
 }

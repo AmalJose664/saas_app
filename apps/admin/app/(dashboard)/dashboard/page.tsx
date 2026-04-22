@@ -1,39 +1,54 @@
-import Link from 'next/link';
-import { createClient } from '@myapp/supabase/server';
-import OrdersTable from './orders/OrdersTable';
-import SubscriptionsTable from './subscriptions/SubscriptionsTable';
-import UsersTable from './users/UsersTable';
-import StatCard from '../../../components/StatCard';
+import Link from 'next/link'
+import OrdersTable from './orders/OrdersTable'
+import SubscriptionsTable from './subscriptions/SubscriptionsTable'
+import UsersTable from './users/UsersTable'
+import StatCard from '../../../components/StatCard'
+import { getDashboardStats } from '../../../lib/dashboard/service'
+
 const TABS = [
 	{ key: 'overview', label: 'Overview' },
 	{ key: 'users', label: 'Users' },
 	{ key: 'subscriptions', label: 'Subscriptions' },
-];
+]
 
 export default async function Dashboard({
 	searchParams,
 }: {
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-	const resolvedSearchParams = await searchParams;
-	const supabase = await createClient();
+	const resolvedSearchParams = await searchParams
 
-	const currentTab = (resolvedSearchParams.tab as string) || 'overview';
-	const search = (resolvedSearchParams.search as string) || '';
-	const page = parseInt((resolvedSearchParams.page as string) || '1', 10);
+	const currentTab = (resolvedSearchParams.tab as string) || 'overview'
+	const search = (resolvedSearchParams.search as string) || ''
+	const page = parseInt((resolvedSearchParams.page as string) || '1', 10)
 
-	const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-	const { count: orderCount } = await supabase.from('orders').select('*', { count: 'exact', head: true });
-	const { data: revenueData } = await supabase.from('orders').select('amount_paise');
-	const totalRevenue = revenueData?.reduce((acc, curr) => acc + (curr.amount_paise || 0), 0) || 0;
+	const statsResult = await getDashboardStats()
+	const stats = statsResult.success
+		? statsResult.data
+		: { userCount: 0, orderCount: 0, formattedRevenue: '₹0' }
 
 	return (
 		<>
 			{/* Stat Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-				<StatCard title="Total Customers" value={userCount?.toLocaleString() || '0'} color="text-blue-600" trend="+12%" />
-				<StatCard title="Total Orders" value={orderCount?.toLocaleString() || '0'} color="text-slate-900" trend="+5%" />
-				<StatCard title="Gross Revenue" value={`₹${(totalRevenue / 100).toLocaleString()}`} color="text-emerald-600" trend="+18%" />
+				<StatCard
+					title="Total Customers"
+					value={stats.userCount.toLocaleString('en-IN')}
+					color="text-blue-600"
+					trend="+12%"
+				/>
+				<StatCard
+					title="Total Orders"
+					value={stats.orderCount.toLocaleString('en-IN')}
+					color="text-slate-900"
+					trend="+5%"
+				/>
+				<StatCard
+					title="Gross Revenue"
+					value={stats.formattedRevenue}
+					color="text-emerald-600"
+					trend="+18%"
+				/>
 			</div>
 
 			{/* Tab Navigation */}
@@ -43,8 +58,8 @@ export default async function Dashboard({
 						key={tab.key}
 						href={`/dashboard?tab=${tab.key}`}
 						className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentTab === tab.key
-							? 'bg-white text-gray-900 shadow-sm'
-							: 'text-gray-500 hover:text-gray-700'
+								? 'bg-white text-gray-900 shadow-sm'
+								: 'text-gray-500 hover:text-gray-700'
 							}`}
 					>
 						{tab.label}
@@ -70,5 +85,5 @@ export default async function Dashboard({
 				<SubscriptionsTable />
 			)}
 		</>
-	);
+	)
 }
