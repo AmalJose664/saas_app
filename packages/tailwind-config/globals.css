@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Shared Design Tokens (2026 v4 style) */
+@theme {
+	--color-primary: #3b82f6;
+	--color-secondary: #10b981;
+}
+:root {
+	--background: #ffffff;
+	--foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--background: #0a0a0a;
+		--foreground: #ededed;
+	}
+}
