@@ -1,5 +1,27 @@
-import { getAllSubscriptions } from '../../../../lib/subscriptions/service'
+/**
+ * @file app/(dashboard)/dashboard/subscriptions/SubscriptionsTable.tsx
+ * @description Async server component that fetches and renders all
+ * subscription records with plan and subscriber details.
+ *
+ * Architecture:
+ * SubscriptionsTable (Server Component)
+ *   ↓ calls
+ * Subscriptions Service (lib/subscriptions/service.ts::getAllSubscriptions)
+ *   ↓ calls
+ * Subscriptions Repository (lib/subscriptions/repository.ts::dbGetSubscriptions)
+ *   ↓ calls
+ * Supabase Server Client
+ *
+ * Joins: profiles (full_name, email) + plan (name, amount, interval)
+ */
 
+import { getAllSubscriptions } from '../../../../lib/subscriptions/service';
+
+/**
+ * SubscriptionsTable — renders a table of all subscription records.
+ *
+ * @returns JSX.Element
+ */
 export default async function SubscriptionsTable() {
 	const result = await getAllSubscriptions()
 

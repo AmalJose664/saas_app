@@ -1,12 +1,42 @@
-import Link from 'next/link'
-import { getUsersPaginated } from '../../../../lib/users/service'
-import UsersSearchInput from './UsersSearchInput'
+/**
+ * @file app/(dashboard)/dashboard/users/UsersTable.tsx
+ * @description Async server component that fetches paginated user profiles
+ * from Supabase and renders them in a sortable, searchable table.
+ *
+ * Architecture:
+ * UsersTable (Server Component)
+ *   ↓ calls
+ * Users Service (lib/users/service.ts::getUsersPaginated)
+ *   ↓ calls
+ * Users Repository (lib/users/repository.ts::dbGetUsersPaginated)
+ *   ↓ calls
+ * Supabase Server Client
+ *
+ * Features:
+ * - Email search via ILIKE
+ * - Pagination (10 users per page)
+ * - Role and status badges
+ * - Link to individual user profile pages
+ */
 
+import Link from 'next/link';
+import { getUsersPaginated } from '../../../../lib/users/service';
+import UsersSearchInput from './UsersSearchInput';
+
+/** Props passed from the parent page or query params */
 interface UsersTableProps {
-	search?: string
-	page?: number
+	/** Search string for email ILIKE filtering */
+	search?: string;
+	/** 1-based page number for pagination */
+	page?: number;
 }
 
+/**
+ * UsersTable — paginated user directory with search and navigation.
+ *
+ * @param search — email search query
+ * @param page — pagination page number (defaults to 1)
+ */
 export default async function UsersTable({ search = '', page = 1 }: UsersTableProps) {
 	const result = await getUsersPaginated({ search, page })
 

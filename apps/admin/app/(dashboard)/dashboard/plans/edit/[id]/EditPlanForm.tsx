@@ -1,26 +1,62 @@
-'use client'
+/**
+ * @file app/(dashboard)/dashboard/plans/edit/[id]/EditPlanForm.tsx
+ * @description Client-side form for editing an existing subscription plan.
+ * Uses Next.js `useActionState` to integrate with the `updatePlanAction` server action.
+ * Receives pre-populated default values from the server component wrapper.
+ *
+ * Architecture:
+ * EditPlanForm (Client Component — 'use client')
+ *   ↓ form action
+ * Server Action (lib/plans/actions.ts::updatePlanAction)
+ *   ↓ validates (Zod)
+ *   ↓ calls
+ * Plans Service (lib/plans/service.ts::updatePlan)
+ *   ↓ converts ₹ → paise (×100)
+ *   ↓ calls
+ * Plans Repository (lib/plans/repository.ts::dbUpdatePlan)
+ *   ↓ calls
+ * Supabase Server Client
+ */
 
-import { useActionState } from 'react'
-import { useRouter } from 'next/navigation'
-import { updatePlanAction } from '../../../../../../lib/plans/actions'
-import type { ActionResult } from '../../../../../../lib/plans/actions'
+'use client';
 
+import { useActionState } from 'react';
+import { useRouter } from 'next/navigation';
+import { updatePlanAction } from '../../../../../../lib/plans/actions';
+import type { ActionResult } from '../../../../../../lib/plans/actions';
+
+/** Shape of the pre-populated default values passed from the server */
 interface DefaultValues {
-	name: string
-	amount: string
-	interval: string
-	razorpay_plan_id: string
-	is_active: boolean
+	/** Plan name */
+	name: string;
+	/** Plan amount in ₹ (displayed in the form, converted to paise on save) */
+	amount: string;
+	/** Billing interval (daily, weekly, monthly, yearly) */
+	interval: string;
+	/** Optional Razorpay plan ID */
+	razorpay_plan_id: string;
+	/** Whether the plan is visible to customers */
+	is_active: boolean;
 }
 
-interface Props {
-	id: string
-	defaultValues: DefaultValues
+/** Props passed from the EditPlanPage server component */
+interface EditPlanFormProps {
+	/** Supabase plan ID (UUID) */
+	id: string;
+	/** Pre-populated form values fetched from the database */
+	defaultValues: DefaultValues;
 }
 
-const initialState: ActionResult = { success: true }
+/** Default form state for useActionState */
+const initialState: ActionResult = { success: true };
 
-export default function EditPlanForm({ id, defaultValues }: Props) {
+/**
+ * EditPlanForm — client-side form for updating a subscription plan.
+ *
+ * @param id — plan UUID
+ * @param defaultValues — pre-populated values from the server
+ */
+export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
 	const router = useRouter()
 	const [state, formAction, isPending] = useActionState(updatePlanAction, initialState)
 

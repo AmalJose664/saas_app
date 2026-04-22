@@ -2,7 +2,7 @@
 
 Internal dashboard for managing the subscription platform. Only users with the `admin` role (set via a Supabase custom JWT claim) can access it.
 
-- **URL:** `http://localhost:3000`
+- **URL:** `http://localhost:3001` (configured in `package.json`)
 - **Auth:** Email/password via Supabase
 - **Role required:** `admin` — enforced in `middleware.ts` by decoding the JWT
 
@@ -22,57 +22,104 @@ npm run dev
 Copy `.env.example` to `.env.local` and fill in:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
 ---
 
 ## Routes
 
-| Route | Description |
-|-------|-------------|
-| `/login` | Admin login page |
-| `/not-authorized` | Shown when a non-admin user tries to access the dashboard |
-| `/dashboard` | Overview — stat cards + recent orders |
-| `/dashboard?tab=users` | Paginated user list with email search |
-| `/dashboard?tab=subscriptions` | All subscriptions with plan and status |
-| `/dashboard/users/[id]` | Individual user profile — subscription, orders, toggle active |
-| `/dashboard/plans` | All subscription plans |
-| `/dashboard/plans/add` | Create a new plan |
-| `/dashboard/plans/edit/[id]` | Edit an existing plan |
-| `/dashboard/plans/[id]` | View plan details |
+| Route | Description | Type |
+|-------|-------------|------|
+| `/` | Landing page with nav cards (redirects to `/dashboard` if logged in) | Server |
+| `/login` | Admin login with password visibility toggle | Client |
+| `/not-authorized` | Access denied page with helpful messaging | Server |
+| `/dashboard` | Overview — stat cards + recent orders | Server |
+| `/dashboard/users` | Paginated user list with email search | Server + Client |
+| `/dashboard/orders` | All orders with customer info | Server |
+| `/dashboard/subscriptions` | All subscriptions with plan details | Server |
+| `/dashboard/users/[id]` | Individual user profile — subscription, orders, toggle active | Server |
+| `/dashboard/plans` | All subscription plans (grid layout) | Server |
+| `/dashboard/plans/add` | Create a new plan (form) | Client |
+| `/dashboard/plans/edit/[id]` | Edit an existing plan | Server + Client |
+| `/dashboard/plans/[id]` | View single plan details | Server |
 
 ---
 
 ## Architecture
 
-Database access follows a three-layer pattern under `lib/`:
+### Three-Layer Pattern (Every Domain)
+
+The app follows a strict **UI → Service → Repository → Supabase** architecture.
 
 ```
 Server Component / Client Form
         ↓
-  actions.ts    'use server' — validates FormData, calls service
-        ↓
-  service.ts    Business logic — paise conversion, result wrapping
-        ↓
-  repository.ts Raw Supabase queries — no logic
+  ┌──────────────────────────────┐
+  │  actions.ts   'use server'   │  ← validates FormData with Zod
+  │         ↓                      │     calls service
+  │  service.ts   Business logic │  ← paise conversion, result wrapping
+  │         ↓                      │     { success: true, data } | { success: false, error }
+  │  repository.ts Raw Supabase    │  ← no logic, just queries
+  │         ↓                      │
+  │  Supabase Server Client        │
+  └──────────────────────────────┘
 ```
 
-Each domain (plans, users, orders, subscriptions, dashboard) has its own folder under `lib/`. Components never import from `@myapp/supabase` directly — they go through the service layer.
+### Domain Folders
+
+Each feature area has its own folder under `lib/`:
+
+```
+lib/
+├── dashboard/
+│   └── service.ts          (aggregates stats from users, orders, revenue)
+├── plans/
+│   ├── actions.ts          (create, update, delete — with Zod validation)
+│   ├── service.ts          (₹ → paise conversion, result wrapping)
+│   └── repository.ts       (raw Supabase queries for 'plan' table)
+├── users/
+│   ├── actions.ts          (toggleUserActiveAction)
+│   ├── service.ts          (pagination, updated_at on write)
+│   └── repository.ts       (paginated search with ILIKE)
+├── orders/
+│   ├── service.ts          (revenue aggregation, ₹ formatting)
+│   └── repository.ts       (joins profiles for customer info)
+└── subscriptions/
+    ├── service.ts          (read-only, joins plan + profile)
+    └── repository.ts       (raw Supabase queries)
+```
+
+### Client vs Server Components
+
+| Layer | Where | Role |
+|-------|-------|------|
+| `middleware.ts` | Edge | Auth + role check before any page loads |
+| Server Component | `page.tsx` | Fetch data, pass to children |
+| Client Component | `*Table.tsx` | Interactive UI (search, pagination, forms) |
+| Server Action | `actions.ts` | `'use server'` — mutations, validation |
+| Service | `service.ts` | Business logic, error wrapping |
+| Repository | `repository.ts` | Raw Supabase, no logic |
 
 ---
 
 ## Auth & Middleware
 
-`middleware.ts` runs on every request to `/dashboard/*`:
+`middleware.ts` runs on every request matched by its `config.matcher`:
 
-1. Checks for a valid Supabase session
-2. Decodes the JWT and reads the `user_role` claim
-3. Redirects to `/not-authorized` if the role is not `admin`
-4. Redirects to `/login` if there is no session
+```
+Request → middleware.ts
+  ├─ Session exists?
+  │   ├─ Yes → decode JWT → user_role === 'admin'?
+  │   │        ├─ Yes → allow → inject x-pathname header for active nav
+  │   │        └─ No  → redirect /not-authorized
+  │   └─ No  → redirect /login
+  └─ /login + session exists?
+      └─ Yes → redirect /dashboard
+```
 
-The `user_role` claim is set by a Supabase database hook (`custom_access_token_hook`).
+**Note:** Next.js 16 shows a deprecation warning for `middleware.ts`. Future versions will use `proxy.ts` instead. This file works for now.
 
 ---
 
@@ -80,10 +127,38 @@ The `user_role` claim is set by a Supabase database hook (`custom_access_token_h
 
 | Package | Purpose |
 |---------|---------|
-| `next` | Framework |
+| `next` | Framework (v16.2.0 with Turbopack) |
 | `@myapp/supabase` | Supabase server/browser clients |
-| `@repo/database` | Generated DB types |
-| `@repo/validations` | Zod schemas for plans |
-| `@repo/ui` | Shared components (ConfirmModal, etc.) |
-| `jwt-decode` | Reading role from JWT in middleware |
+| `@repo/database` | Generated Supabase DB types (TablesInsert, TablesUpdate) |
+| `@repo/validations` | Zod schemas for forms (plans, profiles) |
+| `@repo/ui` | Shared components (ConfirmModal, Logout) |
+| `jwt-decode` | Reading `user_role` from JWT in middleware |
 | `sonner` | Toast notifications |
+
+---
+
+## File Documentation Convention
+
+Every file includes a **JSDoc header** with:
+
+- `@file` path relative to `apps/admin/`
+- `@description` of what the file does
+- ASCII **architecture flow diagram** showing the call chain
+- `@param` docs for every exported function
+- Inline comments (`// ─── Section ───`) for visual grouping
+
+Example from a Server Component:
+
+```typescript
+/**
+ * @file app/(dashboard)/dashboard/plans/page.tsx
+ * @description Plans management page...
+ *
+ * Architecture:
+ * ManagePlans (Server Component)
+ *   ↓ calls
+ * Plans Service → Plans Repository → Supabase
+ */
+```
+
+This convention ensures any developer can understand the data flow at a glance.

@@ -1,17 +1,46 @@
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import OrdersTable from '../../orders/OrdersTable'
-import StatCard from '../../../../../components/StatCard'
-import { getUserById } from '../../../../../lib/users/service'
-import { getSubscriptionByUserId } from '../../../../../lib/subscriptions/service'
-import { getOrders } from '../../../../../lib/orders/service'
-import ToggleUserActive from './ToggleUserActive'
+/**
+ * @file app/(dashboard)/dashboard/users/[id]/page.tsx
+ * @description User profile detail page — shows a specific user's account
+ * details, subscription status, lifetime value (from orders), and
+ * transaction history. Includes a toggle to activate/deactivate the user.
+ *
+ * Architecture:
+ * UserProfilePage (Server Component)
+ *   ↓ calls (parallel)
+ * Users Service      → Subscriptions Service    → Orders Service
+ *   ↓                   ↓                        ↓
+ * Repository            Repository               Repository
+ *   ↓                   ↓                        ↓
+ * Supabase            Supabase                 Supabase
+ *
+ * ToggleUserActive (Client Component)
+ *   ↓ calls
+ * toggleUserActiveAction (Server Action)
+ *   ↓ calls
+ * Users Service → Repository → Supabase
+ */
 
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import OrdersTable from '../../orders/OrdersTable';
+import StatCard from '../../../../../components/StatCard';
+import { getUserById } from '../../../../../lib/users/service';
+import { getSubscriptionByUserId } from '../../../../../lib/subscriptions/service';
+import { getOrders } from '../../../../../lib/orders/service';
+import ToggleUserActive from './ToggleUserActive';
+
+/**
+ * UserProfilePage — fetches user, subscription, and order data in parallel,
+ * then renders the full profile detail view.
+ *
+ * @param params — Next.js route params containing the user UUID
+ */
 export default async function UserProfilePage({
 	params,
 }: {
 	params: Promise<{ id: string }>
 }) {
+	// ─── Parallel data fetching ──────────────────────────────────
 	const { id } = await params
 
 	const [profileResult, subscriptionResult, ordersResult] = await Promise.all([

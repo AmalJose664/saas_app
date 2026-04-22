@@ -1,12 +1,39 @@
-'use client'
+/**
+ * @file app/(dashboard)/dashboard/plans/add/page.tsx
+ * @description Client-side form for creating a new subscription plan.
+ * Uses Next.js `useActionState` to integrate with Server Actions.
+ *
+ * Architecture:
+ * AddPlan (Client Component — 'use client')
+ *   ↓ form action
+ * Server Action (lib/plans/actions.ts::createPlanAction)
+ *   ↓ validates (Zod schema)
+ *   ↓ calls
+ * Plans Service (lib/plans/service.ts::createPlan)
+ *   ↓ converts ₹ → paise (×100)
+ *   ↓ calls
+ * Plans Repository (lib/plans/repository.ts::dbCreatePlan)
+ *   ↓ calls
+ * Supabase Server Client
+ *
+ * On success → revalidates cache + redirects to /dashboard/plans
+ */
 
-import { useActionState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createPlanAction } from '../../../../../lib/plans/actions'
-import type { ActionResult } from '../../../../../lib/plans/actions'
+'use client';
 
-const initialState: ActionResult = { success: true }
+import { useActionState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createPlanAction } from '../../../../../lib/plans/actions';
+import type { ActionResult } from '../../../../../lib/plans/actions';
 
+/** Default form state for useActionState */
+const initialState: ActionResult = { success: true };
+
+/**
+ * AddPlan — client component for creating subscription plans.
+ *
+ * @returns JSX.Element
+ */
 export default function AddPlan() {
 	const router = useRouter()
 	const [state, formAction, isPending] = useActionState(createPlanAction, initialState)

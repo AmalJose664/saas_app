@@ -20,12 +20,12 @@ export const planSchema = z.object({
 
 	// Amount is entered in ₹ (e.g. 499), stored as paise (49900)
 	amount: z
-		.number({ invalid_type_error: 'Amount must be a number' })
+		.number({ message: 'Amount must be a number' })
 		.positive('Amount must be greater than 0')
 		.max(1_000_000, 'Amount seems too large'),
 
 	interval: z.enum(PLAN_INTERVALS, {
-		errorMap: () => ({ message: 'Interval must be daily, weekly, monthly, or yearly' }),
+		message: 'Interval must be daily, weekly, monthly, or yearly',
 	}),
 
 	razorpay_plan_id: z

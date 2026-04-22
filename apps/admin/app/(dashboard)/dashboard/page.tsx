@@ -1,10 +1,29 @@
-import Link from 'next/link'
-import OrdersTable from './orders/OrdersTable'
-import SubscriptionsTable from './subscriptions/SubscriptionsTable'
-import UsersTable from './users/UsersTable'
-import StatCard from '../../../components/StatCard'
-import { getDashboardStats } from '../../../lib/dashboard/service'
+/**
+ * @file app/(dashboard)/dashboard/page.tsx
+ * @description Dashboard overview page — the default landing view after login.
+ * Displays aggregated stat cards and a recent transactions table.
+ *
+ * Architecture:
+ * Server Component (this)
+ *   ↓ calls (parallel)
+ * Dashboard Service (lib/dashboard/service.ts::getDashboardStats)
+ *   ↓ calls (parallel)
+ * User Service   → Order Service   → Revenue Service
+ *   ↓              ↓                ↓
+ * Repository     Repository       Repository
+ *   ↓              ↓                ↓
+ * Supabase       Supabase         Supabase
+ *
+ * Note: Tab navigation is currently commented out in favor of sidebar routes.
+ * The tab query param (?tab=users) is preserved for future use.
+ */
 
+import Link from 'next/link';
+import OrdersTable from './orders/OrdersTable';
+import StatCard from '../../../components/StatCard';
+import { getDashboardStats } from '../../../lib/dashboard/service';
+
+/** Tab definitions for the dashboard (currently unused in UI) */
 const TABS = [
 	{ key: 'overview', label: 'Overview' },
 	{ key: 'users', label: 'Users' },

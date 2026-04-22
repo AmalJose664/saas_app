@@ -1,13 +1,35 @@
-import Logout from "@repo/ui/Logout";
-import { headers } from "next/headers";
-import Link from "next/link";
-import NavItem from "../../../components/NavItem";
+/**
+ * @file app/(dashboard)/dashboard/layout.tsx
+ * @description Dashboard layout — wraps every /dashboard/* route with a
+ * persistent sidebar navigation and top header.
+ *
+ * This is a **Server Component** so it can read request headers to determine
+ * the active route and highlight the correct NavItem.
+ *
+ * Architecture:
+ * layout.tsx (Server Component)
+ *   ├── Sidebar: NavItem[]  (persistent navigation)
+ *   ├── Header: pathname display + Logout button
+ *   └── children: page.tsx  (dynamic content)
+ */
 
-export default async function layout({
+import Logout from '@repo/ui/Logout';
+import { headers } from 'next/headers';
+import Link from 'next/link';
+import NavItem from '../../../components/NavItem';
+
+/**
+ * DashboardLayout — persistent shell for all dashboard routes.
+ *
+ * @param children — the page content rendered by the matched route
+ */
+export default async function DashboardLayout({
 	children,
 }: {
-	children: React.ReactNode
+	children: React.ReactNode;
 }) {
+	// Read the x-pathname header injected by middleware.ts so we know
+	// which route is currently active for sidebar highlighting.
 	const headerList = await headers();
 	const pathname = headerList.get('x-pathname')?.toLowerCase();
 	return (

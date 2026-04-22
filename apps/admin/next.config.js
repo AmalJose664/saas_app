@@ -1,7 +1,16 @@
 /** @type {import('next').NextConfig} */
+import path from 'path';
+
 const nextConfig = {
 	reactStrictMode: true,
-	transpilePackages: ["@repo/ui", "@repo/database", "@repo/validation"],
+	// Explicitly set the Turbopack workspace root to avoid incorrect inference.
+	// Next.js was detecting C:\Personal Projects (wrong) instead of
+	// C:\Personal Projects\supporttaservers (correct monorepo root).
+	// __dirname is apps/admin, so go two levels up to the monorepo root.
+	turbopack: {
+		root: path.resolve(process.cwd(), '..', '..'),
+	},
+	transpilePackages: ["@repo/ui", "@repo/database", "@repo/validations"],
 	images: {
 		remotePatterns: [
 			{ protocol: 'https', hostname: '**.supabase.co' },

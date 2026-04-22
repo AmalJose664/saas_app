@@ -1,9 +1,33 @@
-import Link from 'next/link'
-import DeletePlanButton from '../../../../components/DeletePlan'
-import { getAllPlans } from '../../../../lib/plans/service'
+/**
+ * @file app/(dashboard)/dashboard/plans/page.tsx
+ * @description Plans management page — lists all subscription plans in a card
+ * layout with edit, view, and delete actions.
+ *
+ * Architecture:
+ * ManagePlans (Server Component)
+ *   ↓ calls
+ * Plans Service (lib/plans/service.ts::getAllPlans)
+ *   ↓ calls
+ * Plans Repository (lib/plans/repository.ts::dbGetAllPlans)
+ *   ↓ calls
+ * Supabase Server Client
+ *
+ * Delete is handled by DeletePlanButton (Client Component) calling
+ * deletePlanAction Server Action → service → repository.
+ */
 
+import Link from 'next/link';
+import DeletePlanButton from '../../../../components/DeletePlan';
+import { getAllPlans } from '../../../../lib/plans/service';
+
+/**
+ * ManagePlans — server component that renders the subscription plans grid.
+ *
+ * @returns JSX.Element
+ */
 export default async function ManagePlans() {
-	const result = await getAllPlans()
+	// ─── Fetch all plans through the service layer ────────────────
+	const result = await getAllPlans();
 
 	if (!result.success) {
 		return (
@@ -11,11 +35,12 @@ export default async function ManagePlans() {
 				<p className="font-semibold">Error loading plans</p>
 				<p className="text-sm">{result.error}</p>
 			</div>
-		)
+		);
 	}
 
-	const plans = result.data
+	const plans = result.data;
 
+	// ─── Render ──────────────────────────────────────────────────
 	return (
 		<div className="min-h-screen bg-slate-50 p-8">
 			<div className="max-w-6xl mx-auto">

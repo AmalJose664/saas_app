@@ -1,9 +1,37 @@
+/**
+ * @file app/(dashboard)/dashboard/users/UsersSearchInput.tsx
+ * @description Client-side search input for the users table.
+ * Debounces user input and updates the URL query params via
+ * `useTransition` for optimistic UI updates.
+ *
+ * Architecture:
+ * UsersSearchInput (Client Component — 'use client')
+ *   ↓ onChange
+ * Next.js Router (useRouter + useSearchParams)
+ *   ↓ updates URL
+ * Server Component re-renders with new search params
+ *   ↓ calls
+ * Users Service → Repository → Supabase
+ */
+
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
 
-export default function UsersSearchInput({ defaultValue }: { defaultValue: string }) {
+/** Props for the UsersSearchInput component */
+interface UsersSearchInputProps {
+	/** Current search value from URL query params */
+	defaultValue: string;
+}
+
+/**
+ * UsersSearchInput — debounced email search for the user directory.
+ *
+ * @param defaultValue — initial search string from the URL
+ */
+export default function UsersSearchInput({ defaultValue }: UsersSearchInputProps) {
+	// ─── Hooks ───────────────────────────────────────────────────
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [isPending, startTransition] = useTransition();

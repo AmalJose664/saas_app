@@ -1,12 +1,40 @@
-import { getOrders } from '../../../../lib/orders/service'
+/**
+ * @file app/(dashboard)/dashboard/orders/OrdersTable.tsx
+ * @description Async server component that fetches order records and
+ * renders them in a styled table with customer, amount, status, and date.
+ *
+ * Architecture:
+ * OrdersTable (Server Component)
+ *   ↓ calls
+ * Orders Service (lib/orders/service.ts::getOrders)
+ *   ↓ calls
+ * Orders Repository (lib/orders/repository.ts::dbGetOrders)
+ *   ↓ calls
+ * Supabase Server Client
+ *
+ * Joins: profiles (full_name, email) for customer display.
+ * Amount is displayed in ₹ (converted from paise ÷100).
+ */
 
+import { getOrders } from '../../../../lib/orders/service';
+
+/** Props for the OrdersTable component */
 interface OrdersTableProps {
-	limit?: number
-	userId?: string
+	/** Maximum number of rows to fetch (optional) */
+	limit?: number;
+	/** Filter to a specific user's orders (optional) */
+	userId?: string;
 }
 
+/**
+ * OrdersTable — renders a table of order records.
+ *
+ * @param limit — max rows to show
+ * @param userId — optional user filter for profile pages
+ */
 export default async function OrdersTable({ limit, userId }: OrdersTableProps) {
-	const result = await getOrders({ limit, userId })
+	// ─── Fetch data through the service layer ────────────────────
+	const result = await getOrders({ limit, userId });
 
 	if (!result.success) {
 		return (

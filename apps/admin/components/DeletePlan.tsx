@@ -1,14 +1,46 @@
-'use client'
+/**
+ * @file DeletePlan.tsx
+ * @description Client-side delete button for subscription plans.
+ *
+ * Architecture Flow:
+ * UI (DeletePlanButton)
+ *   ↓ onClick
+ * ConfirmationModal (@repo/ui/ConfirmModel)
+ *   ↓ onConfirm
+ * Server Action (lib/plans/actions.ts::deletePlanAction)
+ *   ↓ calls
+ * Service (lib/plans/service.ts::deletePlan)
+ *   ↓ calls
+ * Repository (lib/plans/repository.ts::dbDeletePlan)
+ *   ↓ calls
+ * Supabase Server Client
+ *
+ * Uses React Portals to render the modal outside the normal DOM tree
+ * so it can overlay the entire page with a backdrop.
+ */
 
-import { useState } from 'react'
-import { createPortal } from 'react-dom'
-import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
-import ConfirmationModal from '@repo/ui/ConfirmModel'
-import { toast } from 'sonner'
-import { deletePlanAction } from '../lib/plans/actions'
+'use client';
 
-export default function DeletePlanButton({ planId }: { planId: string }) {
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+import ConfirmationModal from '@repo/ui/ConfirmModel';
+import { toast } from 'sonner';
+import { deletePlanAction } from '../lib/plans/actions';
+
+/** Props for the DeletePlanButton component */
+interface DeletePlanButtonProps {
+	/** Supabase plan.id to delete */
+	planId: string;
+}
+
+/**
+ * DeletePlanButton — renders a delete button with confirmation modal.
+ *
+ * @param planId — the UUID of the plan to delete
+ */
+export default function DeletePlanButton({ planId }: DeletePlanButtonProps) {
 	const router = useRouter()
 	const [isOpen, setIsOpen] = useState(false)
 	const [isPending, startTransition] = useTransition()

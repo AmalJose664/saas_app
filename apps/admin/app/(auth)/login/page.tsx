@@ -1,30 +1,164 @@
-"use client";
-import { useState } from "react";
-import { createClient } from '@myapp/supabase'
-import { useRouter } from "next/navigation";
+/**
+ * @file Admin Login Page
+ * @description Client-side login page for the admin dashboard.
+ * Handles email/password authentication with Supabase, validates admin role
+ * via the profiles table, and redirects to /dashboard on success.
+ *
+ * UI Architecture:
+ * ┌─────────────┐
+ * │  LoginPage  │  (React Client Component - 'use client')
+ * │   (this)    │
+ * └──────┬──────┘
+ *        │ calls
+ * ┌──────▼──────┐
+ * │  Supabase   │  (Auth + DB via @myapp/supabase)
+ * │   Client    │
+ * └──────┬──────┘
+ *        │ on success
+ * ┌──────▼──────┐
+ * │  /dashboard │  (Next.js App Router redirect)
+ * └─────────────┘
+ *
+ * @author Admin Team
+ */
 
-const Page = () => {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [message, setMessage] = useState("");
+'use client';
 
-	const supabase = createClient()
-	const router = useRouter()
+import { useState } from 'react';
+import { createClient } from '@myapp/supabase';
+import { useRouter } from 'next/navigation';
 
+/**
+ * ------------------------------------------------------------------
+ * SVG Icons (inline, no external dependency needed)
+ * ------------------------------------------------------------------
+ */
+
+/**
+ * EyeOpenIcon — shown when password is hidden (click to show)
+ */
+function EyeOpenIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			className={className}
+		>
+			<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+			<circle cx="12" cy="12" r="3" />
+		</svg>
+	);
+}
+
+/**
+ * EyeClosedIcon — shown when password is visible (click to hide)
+ */
+function EyeClosedIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			className={className}
+		>
+			<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+			<path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+			<path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+			<line x1="2" x2="22" y1="2" y2="22" />
+		</svg>
+	);
+}
+
+/**
+ * ------------------------------------------------------------------
+ * Types
+ * ------------------------------------------------------------------
+ */
+
+/** Shape of the login form state */
+interface LoginFormState {
+	/** Admin email address */
+	email: string;
+	/** Admin password */
+	password: string;
+	/** Whether the form is submitting */
+	loading: boolean;
+	/** Error or status message to display */
+	message: string;
+	/** Whether the password field is visible as plain text */
+	showPassword: boolean;
+}
+
+/**
+ * ------------------------------------------------------------------
+ * LoginPage Component
+ * ------------------------------------------------------------------
+ *
+ * @returns JSX.Element — rendered login form
+ */
+export default function LoginPage() {
+	// ─── Local State ───────────────────────────────────────────────
+	const [email, setEmail] = useState<LoginFormState['email']>('');
+	const [password, setPassword] = useState<LoginFormState['password']>('');
+	const [loading, setLoading] = useState<LoginFormState['loading']>(false);
+	const [message, setMessage] = useState<LoginFormState['message']>('');
+	const [showPassword, setShowPassword] = useState<LoginFormState['showPassword']>(false);
+
+	// ─── Hooks ─────────────────────────────────────────────────────
+	const supabase = createClient();
+	const router = useRouter();
+
+	// ─── Handlers ──────────────────────────────────────────────────
+
+	/**
+	 * Toggle password visibility between plain text and masked.
+	 */
+	const togglePasswordVisibility = () => {
+		setShowPassword((prev) => !prev);
+	};
+
+	/**
+	 * Main login handler.
+	 *
+	 * Flow:
+	 * 1. Authenticate with Supabase Auth (email + password)
+	 * 2. Fetch user role from `profiles` table
+	 * 3. If role === 'admin' → redirect to /dashboard
+	 * 4. If role !== 'admin' → sign out, show unauthorized message
+	 *
+	 * @param e — React form submission event
+	 */
 	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setLoading(true)
+		setLoading(true);
+		setMessage('');
+
+		// ── Step 1: Authenticate via Supabase Auth ─────────────────
 		const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
 			email,
 			password,
 		});
+
 		if (authError || !authData.user) {
-			setLoading(false)
-			setMessage(authError?.message || "Login failed")
-			return
+			setLoading(false);
+			setMessage(authError?.message || 'Login failed. Please check your credentials.');
+			return;
 		}
 
+		// ── Step 2: Verify admin role in profiles table ────────────
 		const { data: profileData, error: profileError } = await supabase
 			.from('profiles')
 			.select('role')
@@ -32,77 +166,155 @@ const Page = () => {
 			.single();
 
 		if (profileError) {
-			console.error("Error fetching profile:", profileError.message);
-			return setMessage("Could not fetch user role.");
+			setLoading(false);
+			setMessage('Could not fetch user role. Please try again.');
+			return;
 		}
-		console.log(profileData)
+
+		// ── Step 3: Role check & redirect ──────────────────────────
 		if (profileData?.role === 'admin') {
-			setLoading(false)
-			router.push("/dashboard")
+			setLoading(false);
+			router.push('/dashboard');
 		} else {
-			await supabase.auth.signOut()
-			setMessage("Unauthorized user")
-			setLoading(false)
-			return
+			// Non-admin user: sign out immediately and reject
+			await supabase.auth.signOut();
+			setMessage('Unauthorized: You do not have admin privileges.');
+			setLoading(false);
 		}
 	};
 
+	// ─── Render ──────────────────────────────────────────────────
 	return (
-		<div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
-			<div className="p-8 bg-white shadow-xl rounded-2xl w-full max-w-md border border-gray-100">
-				<h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-					Welcome Back
-				</h1>
-				<p className="text-gray-500 text-center mb-8 text-sm">
-					Enter your credentials to access your account
+		<div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 px-4">
+			<div className="w-full max-w-md">
+				{/* ── Header ───────────────────────────────────────── */}
+				<div className="text-center mb-8">
+					<div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20">
+						<span className="text-white text-xl font-bold">S</span>
+					</div>
+					<h1 className="text-2xl font-bold text-slate-900 mb-1">
+						Admin Portal
+					</h1>
+					<p className="text-slate-500 text-sm">
+						Sign in to manage your subscription platform
+					</p>
+				</div>
+
+				{/* ── Login Form ─────────────────────────────────────── */}
+				<div className="p-8 bg-white shadow-xl rounded-2xl border border-slate-100">
+					<form onSubmit={handleLogin} className="space-y-5">
+						{/* Email Field */}
+						<div>
+							<label
+								htmlFor="email"
+								className="block text-sm font-medium text-slate-700 mb-1.5"
+							>
+								Email Address
+							</label>
+							<input
+								id="email"
+								type="email"
+								placeholder="admin@example.com"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+								required
+								autoComplete="email"
+							/>
+						</div>
+
+						{/* Password Field with Eye Toggle */}
+						<div>
+							<label
+								htmlFor="password"
+								className="block text-sm font-medium text-slate-700 mb-1.5"
+							>
+								Password
+							</label>
+							<div className="relative">
+								<input
+									id="password"
+									type={showPassword ? 'text' : 'password'}
+									placeholder="••••••••"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									className="w-full px-4 py-2.5 pr-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+									required
+									autoComplete="current-password"
+								/>
+								{/* Eye toggle button */}
+								<button
+									type="button"
+									onClick={togglePasswordVisibility}
+									className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+									tabIndex={-1}
+									aria-label={showPassword ? 'Hide password' : 'Show password'}
+								>
+									{showPassword ? (
+										<EyeClosedIcon className="w-5 h-5" />
+									) : (
+										<EyeOpenIcon className="w-5 h-5" />
+									)}
+								</button>
+							</div>
+						</div>
+
+						{/* Error / Status Message */}
+						{message && (
+							<div
+								className={`p-3 rounded-lg text-sm ${
+									message.includes('Success') || message.includes('signed')
+										? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+										: 'bg-red-50 text-red-700 border border-red-200'
+								}`}
+								role="alert"
+							>
+								{message}
+							</div>
+						)}
+
+						{/* Submit Button */}
+						<button
+							type="submit"
+							disabled={loading}
+							className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{loading ? (
+								<span className="flex items-center justify-center gap-2">
+									<svg
+										className="animate-spin h-4 w-4 text-white"
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<circle
+											className="opacity-25"
+											cx="12"
+											cy="12"
+											r="10"
+											stroke="currentColor"
+											strokeWidth="4"
+										/>
+										<path
+											className="opacity-75"
+											fill="currentColor"
+											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+										/>
+									</svg>
+									Signing in...
+								</span>
+							) : (
+								'Sign In'
+							)}
+						</button>
+					</form>
+				</div>
+
+				{/* ── Footer ─────────────────────────────────────────── */}
+				<p className="text-center text-slate-400 text-xs mt-6">
+					Secure admin access. Unauthorized entry is prohibited.
 				</p>
-
-				<form onSubmit={handleLogin} className="space-y-4">
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">
-							Email Address
-						</label>
-						<input
-							type="email"
-							placeholder="you@example.com"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900"
-							required
-						/>
-					</div>
-
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">
-							Password
-						</label>
-						<input
-							type="password"
-							placeholder="••••••••"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900"
-							required
-						/>
-					</div>
-
-					{message && (
-						<p className={`text-sm text-center ${message.includes("Success") ? "text-green-600" : "text-red-600"}`}>
-							{message}
-						</p>
-					)}
-
-					<button
-						type="submit"
-						disabled={loading}
-						className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50"
-					>
-						{loading ? "Signing in..." : "Sign In"}
-					</button>
-				</form>
 			</div>
 		</div>
 	);
-};
-
-export default Page;
+}
