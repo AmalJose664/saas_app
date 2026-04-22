@@ -14,16 +14,15 @@ const Page = () => {
 
 	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-
+		setLoading(true)
 		const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
 			email,
 			password,
 		});
-
 		if (authError || !authData.user) return setMessage(authError?.message || "Login failed");
 
 		const { data: profileData, error: profileError } = await supabase
-			.from('Profiles')
+			.from('profiles')
 			.select('role')
 			.eq('id', authData.user.id)
 			.single();
@@ -34,6 +33,7 @@ const Page = () => {
 		}
 
 		if (profileData?.role === 'admin') {
+			setLoading(false)
 			router.push("/dashboard")
 		} else {
 			await supabase.auth.signOut()
@@ -73,7 +73,7 @@ const Page = () => {
 							Password
 						</label>
 						<input
-							type="text"
+							type="password"
 							placeholder="••••••••"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}

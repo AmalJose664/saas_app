@@ -1,13 +1,13 @@
 import Link from 'next/link';
 
 import { createClient } from '@myapp/supabase/server';
-import DeletePlanButton from '../../../components/DeletePlan';
+import DeletePlanButton from '../../../../components/DeletePlan';
 
 export default async function ManagePlans() {
 
 
 	const supabase = await createClient()
-	const { data: plans, error } = await supabase.from('Plan').select('*');
+	const { data: plans, error } = await supabase.from('plan').select('*');
 	const { data: { user } } = await supabase.auth.getUser();
 	console.log({ plans, error, user })
 
@@ -20,7 +20,7 @@ export default async function ManagePlans() {
 						<p className="text-slate-500">Configure tiers for your Razorpay integration</p>
 					</div>
 					<Link
-						href="/plans/add"
+						href="/dashboard/plans/add"
 						className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition shadow-sm"
 					>
 						+ Create New Plan
@@ -54,10 +54,10 @@ export default async function ManagePlans() {
 							</div>
 
 							<div className="mt-6 pt-4 border-t border-slate-50 flex gap-3">
-								<Link href={"/plans/edit/" + plan.id} className="flex-1 text-center text-sm font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
+								<Link href={"/dashboard/plans/edit/" + plan.id} className="flex-1 text-center text-sm font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
 									Edit
 								</Link>
-								<Link href={"/plans/" + plan.id} className="flex-1 text-sm text-center font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
+								<Link href={"/dashboard/plans/" + plan.id} className="flex-1 text-sm text-center font-medium py-2 border border-slate-200 rounded hover:bg-slate-50 transition">
 									View
 								</Link>
 								<DeletePlanButton planId={plan.id} />

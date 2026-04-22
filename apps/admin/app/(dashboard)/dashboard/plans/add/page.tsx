@@ -1,14 +1,16 @@
-"use client"
-import { useState, useEffect } from 'react'
+'use client'
+import { useState } from 'react'
 import { createClient } from '@myapp/supabase'
 import { useRouter } from 'next/navigation'
+import { createPlanSchema } from '@repo/validations'
+import { toast } from 'sonner'
 
-const EditPlan = ({ id }: { id: string }) => {
+export default function AddPlan() {
 	const supabase = createClient()
 	const router = useRouter()
 
 	const [loading, setLoading] = useState(false)
-	const [fetching, setFetching] = useState(true)
+	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [formData, setFormData] = useState({
 		name: '',
 		amount: '',
@@ -17,80 +19,54 @@ const EditPlan = ({ id }: { id: string }) => {
 		isActive: true
 	})
 
-	useEffect(() => {
-		const fetchPlan = async () => {
-			try {
-				const { data, error } = await supabase
-					.from('Plan')
-					.select('*')
-					.eq('id', id)
-					.single()
-
-				if (error) throw error
-
-				if (data) {
-					setFormData({
-						name: data.name,
-						// Convert cents back to main currency unit for the input field
-						amount: (data.amount / 100).toString(),
-						interval: data.interval,
-						razorpayPlanId: data.razorpay_plan_id || '',
-						isActive: data.is_active
-					})
-				}
-			} catch (error: any) {
-				console.error('Error fetching plan:', error)
-				alert('Could not find this plan.')
-				router.push('/')
-			} finally {
-				setFetching(false)
-			}
-		}
-
-		fetchPlan()
-	}, [id, supabase, router])
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setLoading(true)
+		setErrors({})
+
+		const parsed = createPlanSchema.safeParse({
+			name: formData.name,
+			amount: parseFloat(formData.amount),
+			interval: formData.interval,
+			razorpay_plan_id: formData.razorpayPlanId || null,
+			is_active: formData.isActive,
+		})
+
+		if (!parsed.success) {
+			const fieldErrors: Record<string, string> = {}
+			parsed.error.issues.forEach((err) => {
+				const field = err.path[0] as string
+				fieldErrors[field] = err.message
+			})
+			setErrors(fieldErrors)
+			setLoading(false)
+			return
+		}
 
 		try {
-			const { data, error } = await supabase
-				.from('Plan')
-				.update({
-					name: formData.name,
-					amount: Math.round(parseFloat(formData.amount) * 100),
-					interval: formData.interval,
-					razorpay_plan_id: formData.razorpayPlanId || null,
-					is_active: formData.isActive,
-				})
-				.eq('id', id)
-				.select() // <--- Add this to get the updated row back
+			const { error } = await supabase
+				.from('plan')
+				.insert([
+					{
+						name: parsed.data.name,
+						amount: Math.round(parsed.data.amount * 100),
+						interval: parsed.data.interval,
+						razorpay_plan_id: parsed.data.razorpay_plan_id ?? null,
+						is_active: parsed.data.is_active,
+					}
+				])
 
 			if (error) throw error
 
-			if (!data || data.length === 0) {
-				alert('No record found with this ID to update.')
-				return
-			}
-
-			alert('Plan updated successfully!')
-			router.push('/plans')
+			toast.success('Plan created successfully!')
+			router.push('/dashboard/plans/')
 			router.refresh()
 		} catch (error: any) {
-			console.error('Update Error:', error)
-			alert(error.message)
+			console.log(error)
+			toast.error(error.message)
 		} finally {
 			setLoading(false)
 		}
-	}
-
-	if (fetching) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<p className="text-slate-500 animate-pulse">Loading plan details...</p>
-			</div>
-		)
 	}
 
 	return (
@@ -104,7 +80,7 @@ const EditPlan = ({ id }: { id: string }) => {
 				</button>
 
 				<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
-					<h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Subscription Plan</h1>
+					<h1 className="text-2xl font-bold text-slate-900 mb-6">Create New Subscription Plan</h1>
 
 					<form onSubmit={handleSubmit} className="space-y-6">
 						<div>
@@ -117,6 +93,7 @@ const EditPlan = ({ id }: { id: string }) => {
 								value={formData.name}
 								onChange={(e) => setFormData({ ...formData, name: e.target.value })}
 							/>
+							{errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
@@ -130,6 +107,7 @@ const EditPlan = ({ id }: { id: string }) => {
 									value={formData.amount}
 									onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
 								/>
+								{errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-slate-700 mb-1">Interval</label>
@@ -143,6 +121,7 @@ const EditPlan = ({ id }: { id: string }) => {
 									<option value="monthly">Monthly</option>
 									<option value="yearly">Yearly</option>
 								</select>
+								{errors.interval && <p className="text-xs text-red-500 mt-1">{errors.interval}</p>}
 							</div>
 						</div>
 
@@ -155,6 +134,8 @@ const EditPlan = ({ id }: { id: string }) => {
 								value={formData.razorpayPlanId}
 								onChange={(e) => setFormData({ ...formData, razorpayPlanId: e.target.value })}
 							/>
+							{errors.razorpay_plan_id && <p className="text-xs text-red-500 mt-1">{errors.razorpay_plan_id}</p>}
+							<p className="text-xs text-slate-400 mt-1 italic">Link this to your existing Razorpay dashboard plan.</p>
 						</div>
 
 						<div className="flex items-center gap-3">
@@ -178,7 +159,7 @@ const EditPlan = ({ id }: { id: string }) => {
 							className={`w-full py-3 px-4 rounded-lg font-bold text-white transition ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'
 								}`}
 						>
-							{loading ? 'Updating...' : 'Update Plan'}
+							{loading ? 'Creating...' : 'Save Plan'}
 						</button>
 					</form>
 				</div>
@@ -186,4 +167,3 @@ const EditPlan = ({ id }: { id: string }) => {
 		</div>
 	)
 }
-export default EditPlan

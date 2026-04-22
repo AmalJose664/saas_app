@@ -1,14 +1,34 @@
 import { createClient } from '@myapp/supabase/server';
 import Link from 'next/link';
+import UsersSearchInput from './UsersSearchInput';
 
-export default async function UsersTable() {
+const PAGE_SIZE = 10;
+
+interface UsersTableProps {
+	search?: string;
+	page?: number;
+}
+
+export default async function UsersTable({ search = '', page = 1 }: UsersTableProps) {
 	const supabase = await createClient();
 
-	const { data: profiles, error } = await supabase
-		.from('Profiles')
-		.select('*')
-		.order('created_at', { ascending: false });
+	const currentPage = Math.max(1, page);
+	const from = (currentPage - 1) * PAGE_SIZE;
+	const to = from + PAGE_SIZE - 1;
 
+	let query = supabase
+		.from('profiles')
+		.select('*', { count: 'exact' })
+		.order('created_at', { ascending: false })
+		.range(from, to);
+
+	if (search.trim()) {
+		query = query.ilike('email', `%${search.trim()}%`);
+	}
+
+	const { data: profiles, error, count } = await query;
+
+	const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE);
 
 	if (error) {
 		return (
@@ -25,15 +45,12 @@ export default async function UsersTable() {
 			<div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
 				<div>
 					<h3 className="text-lg font-semibold text-gray-800">User Directory</h3>
-					<p className="text-xs text-gray-500">Manage and view all registered customers</p>
+					<p className="text-xs text-gray-500">
+						{count ?? 0} registered {(count ?? 0) === 1 ? 'user' : 'users'}
+						{search ? ` matching "${search}"` : ''}
+					</p>
 				</div>
-				<div className="flex gap-3">
-					<input
-						type="text"
-						placeholder="Search by email..."
-						className="text-sm border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all w-64"
-					/>
-				</div>
+				<UsersSearchInput defaultValue={search} />
 			</div>
 
 			<div className="overflow-x-auto">
@@ -81,11 +98,14 @@ export default async function UsersTable() {
 									{new Date(profile.created_at).toLocaleDateString('en-US', {
 										month: 'short',
 										day: 'numeric',
-										year: 'numeric'
+										year: 'numeric',
 									})}
 								</td>
 								<td className="px-6 py-4 text-right">
-									<Link href={"/users/" + profile.id} className="text-slate-400 hover:text-blue-600 font-semibold text-xs uppercase tracking-tighter transition-colors">
+									<Link
+										href={'/dashboard/users/' + profile.id}
+										className="text-slate-400 hover:text-blue-600 font-semibold text-xs uppercase tracking-tighter transition-colors"
+									>
 										Manage
 									</Link>
 								</td>
@@ -95,12 +115,82 @@ export default async function UsersTable() {
 				</table>
 			</div>
 
-
+			{/* Empty state */}
 			{profiles?.length === 0 && (
 				<div className="p-20 text-center">
-					<p className="text-gray-400 italic">No users found in the system.</p>
+					<p className="text-gray-400 italic">
+						{search ? `No users found matching "${search}".` : 'No users found in the system.'}
+					</p>
+				</div>
+			)}
+
+			{/* Pagination */}
+			{totalPages > 1 && (
+				<div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
+					<p className="text-xs text-gray-500">
+						Page {currentPage} of {totalPages}
+					</p>
+					<div className="flex items-center gap-2">
+						<PaginationLink
+							href={buildHref(search, currentPage - 1)}
+							disabled={currentPage <= 1}
+							label="← Prev"
+						/>
+						{Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+							<PaginationLink
+								key={p}
+								href={buildHref(search, p)}
+								active={p === currentPage}
+								label={String(p)}
+							/>
+						))}
+						<PaginationLink
+							href={buildHref(search, currentPage + 1)}
+							disabled={currentPage >= totalPages}
+							label="Next →"
+						/>
+					</div>
 				</div>
 			)}
 		</div>
+	);
+}
+
+function buildHref(search: string, page: number) {
+	const params = new URLSearchParams();
+	params.set('tab', 'users');
+	if (search) params.set('search', search);
+	if (page > 1) params.set('page', String(page));
+	return `/dashboard?${params.toString()}`;
+}
+
+function PaginationLink({
+	href,
+	label,
+	active = false,
+	disabled = false,
+}: {
+	href: string;
+	label: string;
+	active?: boolean;
+	disabled?: boolean;
+}) {
+	if (disabled) {
+		return (
+			<span className="px-3 py-1.5 text-xs rounded-md text-gray-300 cursor-not-allowed select-none">
+				{label}
+			</span>
+		);
+	}
+	return (
+		<Link
+			href={href}
+			className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${active
+				? 'bg-blue-600 text-white'
+				: 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+				}`}
+		>
+			{label}
+		</Link>
 	);
 }

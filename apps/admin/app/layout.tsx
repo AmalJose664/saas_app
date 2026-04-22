@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import '@repo/tailwind-config/globals.css'
 
 import { Inter } from 'next/font/google';
+import { Toaster } from "sonner";
 export const metadata: Metadata = {
 	title: "Saas App Admin",
 	description: "",
@@ -20,6 +21,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={inter.className}>
 				{children}
+				<Toaster />
 			</body>
 		</html>
 	);

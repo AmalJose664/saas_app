@@ -1,6 +1,6 @@
 import { createClient } from '@myapp/supabase/server';
 import Link from 'next/link';
-import DeletePlanButton from '../../../../components/DeletePlan';
+import DeletePlanButton from '../../../../../components/DeletePlan';
 interface Plan {
 	id: string
 	name: string
@@ -17,7 +17,7 @@ export default async function Page({
 	const { id } = await params
 	const supabase = await createClient()
 	const { data: plans, error } = await supabase
-		.from('Plan')
+		.from('plan')
 		.select('*')
 		.order('created_at', { ascending: false })
 		.eq('id', id)
@@ -36,7 +36,7 @@ export default async function Page({
 						<p className="text-slate-500">Manage pricing tiers</p>
 					</div>
 					<Link
-						href="/plans/add"
+						href="/dashboard/plans/add"
 						className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm"
 					>
 						+ Create Another Plan
@@ -76,7 +76,7 @@ export default async function Page({
 										</td>
 										<td className="p-4 text-right space-x-4">
 											<Link
-												href={`/plans/edit/${plan.id}`}
+												href={`/dashboard/plans/edit/${plan.id}`}
 												className="text-blue-600 hover:text-blue-800 text-sm font-medium"
 											>
 												Edit

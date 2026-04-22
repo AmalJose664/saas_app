@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { createClient } from '@myapp/supabase';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '@repo/ui/ConfirmModel';
+import { toast } from 'sonner';
 
 export default function DeletePlanButton({ planId }: { planId: string }) {
 	const supabase = createClient();
@@ -14,10 +15,10 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
 
 	const handleDelete = async () => {
 		setIsDeleting(true);
-		const { error } = await supabase.from('Plan').delete().eq('id', planId);
+		const { error } = await supabase.from('plan').delete().eq('id', planId);
 
 		if (error) {
-			alert(error.message);
+			toast.error(error.message);
 			setIsDeleting(false);
 			setIsOpen(false);
 		} else {

@@ -1,7 +1,7 @@
 import { createClient } from '@myapp/supabase/server';
 import Link from 'next/link';
-import OrdersTable from '../../dashboard/OrdersTable';
-import StatCard from '../../dashboard/StatCard';
+import OrdersTable from '../../orders/OrdersTable';
+import StatCard from '../../../../../components/StatCard';
 
 export default async function UserProfilePage({
 	params,
@@ -13,14 +13,14 @@ export default async function UserProfilePage({
 
 
 	const { data: profile } = await supabase
-		.from('Profiles')
+		.from('profiles')
 		.select('*')
 		.eq('id', id)
 		.single();
 
 
 	const { data: subscription } = await supabase
-		.from('Subscriptions')
+		.from('subscriptions')
 		.select('*, Plan(*)')
 		.eq('user_id', id)
 		.maybeSingle();
@@ -43,7 +43,7 @@ export default async function UserProfilePage({
 					<span className="text-gray-900 font-medium">User Profile</span>
 				</nav>
 
-				<div className="flex justify-between items-end">
+				<div className="flex justify-around items-end">
 					<div className="flex items-center gap-5">
 						<div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-2xl font-bold shadow-xl">
 							{profile.full_name?.[0].toUpperCase() || 'U'}
@@ -53,6 +53,7 @@ export default async function UserProfilePage({
 							<p className="text-gray-500 font-medium">{profile.email}</p>
 						</div>
 					</div>
+
 				</div>
 			</div>
 

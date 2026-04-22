@@ -2,7 +2,7 @@ import { createClient } from '@myapp/supabase/server';
 
 export default async function SubscriptionsTable() {
 	const supabase = await createClient();
-	const { data: subs } = await supabase.from('Subscriptions').select('*, users(full_name)');
+	const { data: subs } = await supabase.from('subscriptions').select('*, users(full_name)');
 
 	return (
 		<div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
