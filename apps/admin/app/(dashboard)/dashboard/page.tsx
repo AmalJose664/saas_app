@@ -29,7 +29,6 @@ export default async function Dashboard({
 
 	return (
 		<>
-			{/* Stat Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 				<StatCard
 					title="Total Customers"
@@ -51,8 +50,7 @@ export default async function Dashboard({
 				/>
 			</div>
 
-			{/* Tab Navigation */}
-			<div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
+			{/* <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
 				{TABS.map((tab) => (
 					<Link
 						key={tab.key}
@@ -65,9 +63,8 @@ export default async function Dashboard({
 						{tab.label}
 					</Link>
 				))}
-			</div>
+			</div> */}
 
-			{/* Tab Content */}
 			{currentTab === 'overview' && (
 				<div className="bg-white rounded-xl shadow-sm border border-gray-200">
 					<div className="p-6 border-b border-gray-100">
@@ -77,13 +74,13 @@ export default async function Dashboard({
 				</div>
 			)}
 
-			{currentTab === 'users' && (
+			{/* {currentTab === 'users' && (
 				<UsersTable search={search} page={page} />
 			)}
 
 			{currentTab === 'subscriptions' && (
 				<SubscriptionsTable />
-			)}
+			)} */}
 		</>
 	)
 }

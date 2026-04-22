@@ -24,7 +24,6 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 	return (
 		<div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
-			{/* Header */}
 			<div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
 				<div>
 					<h3 className="text-lg font-semibold text-gray-800">User Directory</h3>
@@ -36,7 +35,6 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 				<UsersSearchInput defaultValue={search} />
 			</div>
 
-			{/* Table */}
 			<div className="overflow-x-auto">
 				<table className="w-full text-left border-collapse">
 					<thead>
@@ -99,7 +97,6 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 				</table>
 			</div>
 
-			{/* Empty state */}
 			{profiles.length === 0 && (
 				<div className="p-20 text-center">
 					<p className="text-gray-400 italic">
@@ -108,7 +105,6 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 				</div>
 			)}
 
-			{/* Pagination */}
 			{totalPages > 1 && (
 				<div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
 					<p className="text-xs text-gray-500">

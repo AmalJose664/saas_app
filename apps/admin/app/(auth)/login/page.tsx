@@ -19,7 +19,11 @@ const Page = () => {
 			email,
 			password,
 		});
-		if (authError || !authData.user) return setMessage(authError?.message || "Login failed");
+		if (authError || !authData.user) {
+			setLoading(false)
+			setMessage(authError?.message || "Login failed")
+			return
+		}
 
 		const { data: profileData, error: profileError } = await supabase
 			.from('profiles')
@@ -31,7 +35,7 @@ const Page = () => {
 			console.error("Error fetching profile:", profileError.message);
 			return setMessage("Could not fetch user role.");
 		}
-
+		console.log(profileData)
 		if (profileData?.role === 'admin') {
 			setLoading(false)
 			router.push("/dashboard")

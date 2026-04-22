@@ -34,7 +34,7 @@ export default function AddPlan() {
 					)}
 
 					<form action={formAction} className="space-y-6">
-						{/* Plan Name */}
+
 						<div>
 							<label className="block text-sm font-medium text-slate-700 mb-1">Plan Name</label>
 							<input
@@ -47,7 +47,6 @@ export default function AddPlan() {
 							{fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
 						</div>
 
-						{/* Amount + Interval */}
 						<div className="grid grid-cols-2 gap-4">
 							<div>
 								<label className="block text-sm font-medium text-slate-700 mb-1">Amount (in ₹)</label>
@@ -78,7 +77,6 @@ export default function AddPlan() {
 							</div>
 						</div>
 
-						{/* Razorpay Plan ID */}
 						<div>
 							<label className="block text-sm font-medium text-slate-700 mb-1">Razorpay Plan ID (Optional)</label>
 							<input
@@ -91,9 +89,8 @@ export default function AddPlan() {
 							<p className="text-xs text-slate-400 mt-1 italic">Link this to your existing Razorpay dashboard plan.</p>
 						</div>
 
-						{/* Is Active */}
 						<div className="flex items-center gap-3">
-							{/* Hidden field sends 'false' by default; checkbox overrides with 'true' when checked */}
+
 							<input type="hidden" name="is_active" value="false" />
 							<input
 								type="checkbox"

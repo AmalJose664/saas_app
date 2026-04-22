@@ -81,7 +81,6 @@ export default async function Page({
 											>
 												Edit
 											</Link>
-											{/* We use a small Client Component for the Delete button since it needs an onClick handler */}
 											<DeletePlanButton planId={plan.id} />
 										</td>
 									</tr>
