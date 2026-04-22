@@ -1,4 +1,4 @@
-# MyApp
+# Simple Subscription Platform
 
 A SaaS subscription platform built with Next.js, Supabase, Razorpay and Resend.
 

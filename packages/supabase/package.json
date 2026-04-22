@@ -1,7 +1,12 @@
 {
 	"name": "@myapp/supabase",
 	"version": "0.0.1",
-	"main": "./src/client.ts",
+	"main": "./index.ts",
+	"exports": {
+		".": "./index.ts",
+		"./server": "./src/server.ts",
+		"./client": "./src/client.ts"
+	},
 	"dependencies": {
 		"@supabase/supabase-js": "latest",
 		"@supabase/ssr": "latest"

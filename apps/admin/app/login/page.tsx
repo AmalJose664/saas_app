@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { createClient } from '@myapp/supabase'
+import { useRouter } from "next/navigation";
 
 const Page = () => {
 	const [email, setEmail] = useState("");
@@ -9,24 +10,37 @@ const Page = () => {
 	const [message, setMessage] = useState("");
 
 	const supabase = createClient()
+	const router = useRouter()
 
 	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setLoading(true);
-		setMessage("");
 
-		const { error } = await supabase.auth.signInWithPassword({
+		const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
 			email,
 			password,
 		});
 
-		if (error) {
-			setMessage(error.message);
-		} else {
-			setMessage("Success! Redirecting...");
-			window.location.href = "/dashboard";
+		if (authError || !authData.user) return setMessage(authError?.message || "Login failed");
+
+		const { data: profileData, error: profileError } = await supabase
+			.from('Profiles')
+			.select('role')
+			.eq('id', authData.user.id)
+			.single();
+
+		if (profileError) {
+			console.error("Error fetching profile:", profileError.message);
+			return setMessage("Could not fetch user role.");
 		}
-		setLoading(false);
+
+		if (profileData?.role === 'admin') {
+			router.push("/dashboard")
+		} else {
+			await supabase.auth.signOut()
+			setMessage("Unauthorized user")
+			setLoading(false)
+			return
+		}
 	};
 
 	return (
@@ -59,7 +73,7 @@ const Page = () => {
 							Password
 						</label>
 						<input
-							type="password"
+							type="text"
 							placeholder="••••••••"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
