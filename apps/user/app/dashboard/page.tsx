@@ -15,16 +15,16 @@ interface Plan {
 }
 
 export default function DashboardPage() {
-	const supabase = createClient()
-	const router = useRouter()
+	const supabase = createClient();
+	const router = useRouter();
 
-	const [user, setUser] = useState<any>(null)
-	const [plans, setPlans] = useState<Plan[]>([])
-	const [loading, setLoading] = useState(true)
+	const [user, setUser] = useState<any>(null);
+	const [plans, setPlans] = useState<Plan[]>([]);
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		const initializeDashboard = async () => {
-			const { data: { user } } = await supabase.auth.getUser()
+			const { data: { user } } = await supabase.auth.getUser();
 			if (!user) {
 				router.push('/login')
 				return
@@ -32,7 +32,7 @@ export default function DashboardPage() {
 			setUser(user)
 
 			const { data: plansData, error } = await supabase
-				.from('Plan')
+				.from('plan')
 				.select('*')
 				.eq('is_active', true)
 				.order('amount', { ascending: true })
@@ -42,14 +42,8 @@ export default function DashboardPage() {
 			}
 			setLoading(false)
 		}
-
 		initializeDashboard()
 	}, [router, supabase])
-
-	const handleLogout = async () => {
-		await supabase.auth.signOut()
-		router.push('/login')
-	}
 
 	const handlePurchase = (planId: string) => {
 		console.log("Initiating purchase for plan:", planId)

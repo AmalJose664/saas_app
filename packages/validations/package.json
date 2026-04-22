@@ -1,0 +1,10 @@
+{
+	"name": "@repo/validations",
+	"version": "0.0.0",
+	"private": true,
+	"main": "./index.ts",
+	"types": "./index.ts",
+	"dependencies": {
+		"zod": "^4.3.6"
+	}
+}

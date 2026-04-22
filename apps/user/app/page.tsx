@@ -1,17 +1,8 @@
-import Image, { type ImageProps } from "next/image";
-import styles from "./page.module.css";
-
-type Props = Omit<ImageProps, "src"> & {
-	srcLight: string;
-	srcDark: string;
-};
-
 import Link from 'next/link'
 
 export default function Home() {
 	return (
 		<div className="min-h-screen bg-white">
-			{/* Navigation */}
 			<nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
 				<div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-2">
@@ -37,7 +28,7 @@ export default function Home() {
 			<section className="pt-32 pb-20 px-6">
 				<div className="max-w-4xl mx-auto text-center">
 					<h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
-						The simple way to <span className="text-blue-600 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">manage your subscriptions.</span>
+						The simple way to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">manage your subscriptions.</span>
 					</h1>
 					<p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
 						An all-in-one platform to track, manage, and optimize your monthly recurring costs without the headache.

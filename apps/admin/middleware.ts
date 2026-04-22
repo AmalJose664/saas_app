@@ -3,79 +3,64 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtDecode } from "jwt-decode"
 
-
-const protectedRoutes = ['/dashboard', '/orders', '/payments', '/profile', '/plans']
-
 export async function middleware(request: NextRequest) {
-	const response = NextResponse.next()
-	const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+	const pathname = request.nextUrl.pathname;
+
+	// 1. Create the initial response
+	let response = NextResponse.next({
+		request: {
+			headers: new Headers(request.headers),
+		},
+	});
+
+	response.headers.set('x-pathname', pathname);
+
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
 		{
 			cookies: {
 				getAll: () => request.cookies.getAll(),
-				setAll: (cookies) => cookies.forEach(({ name, value, options }) =>
-					response.cookies.set(name, value, options))
+				setAll: (cookies) => {
+					cookies.forEach(({ name, value, options }) =>
+						response.cookies.set(name, value, options)
+					)
+				}
 			}
 		}
 	)
 
 	const { data: { session } } = await supabase.auth.getSession()
 
-	const isProtectedRoute = protectedRoutes.some(route =>
-		request.nextUrl.pathname.startsWith(route)
-	)
-
-
-	console.log({ isProtectedRoute, session: !!session ? "yes" : "No" })
-
+	const isProtectedRoute = pathname.startsWith('/dashboard');
 
 	if (isProtectedRoute) {
-		console.log("protected route ", request.url)
 		if (!session) {
-			console.log("from no session")
-			return NextResponse.redirect(new URL('/login', request.url))
+			return NextResponse.redirect(new URL('/login', request.url));
 		}
-		else {
-			console.log("Yes session")
-			const decoded: any = jwtDecode(session.access_token)
-			const role = decoded?.user_role
+
+		try {
+			const decoded: any = jwtDecode(session.access_token);
+			const role = decoded?.user_role;
 
 			if (role !== 'admin') {
-				console.log("not admin")
-				return NextResponse.redirect(new URL('/login', request.url))
-			} else {
-				console.log("Yes admin")
-				return response
+				return NextResponse.redirect(new URL('/not-authorized', request.url));
 			}
+		} catch (error) {
+			return NextResponse.redirect(new URL('/login', request.url));
 		}
-	} else {
-		console.log("not protected route", request.url)
-		if (session) {
-			console.log("Yes session")
-			if (isLoginPage) {
-				console.log("login page with session")
-				return NextResponse.redirect(new URL('/dashboard', request.url))
-			} else {
-				console.log("Not login")
-				return response
-			}
-		} else {
-			console.log("Not session")
-			return response
-		}
+
+		return response;
+	}
+	if (session && pathname.startsWith('/login')) {
+		return NextResponse.redirect(new URL('/dashboard', request.url));
 	}
 
+	return response;
 }
 
 export const config = {
 	matcher: [
-		'/dashboard/:path*',
-		'/orders/:path*',
-		'/payments/:path*',
-		'/plans/:path*',
-		'/profile/:path*',
-		'/((?!api|_next/static|_next/image|favicon.ico|\\.well-known).*)'
-	]
+		'/((?!api|_next/static|_next/image|favicon.ico|robots.txt).*)',
+	],
 }
