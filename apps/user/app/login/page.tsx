@@ -1,3 +1,16 @@
+/**
+ * @file app/login/page.tsx
+ * @description Login page — supports email/password and Google OAuth.
+ *
+ * This is a Client Component because it manages form state and calls
+ * the Supabase browser client directly for auth flows.
+ *
+ * Auth flows:
+ * - Email/password: signInWithPassword → redirect to /dashboard on success
+ * - Google OAuth: signInWithOAuth → redirects to /auth/callback to exchange code
+ *
+ * Middleware redirects authenticated users away from this page to /dashboard.
+ */
 'use client'
 
 import { useState } from 'react'

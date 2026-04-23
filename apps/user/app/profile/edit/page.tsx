@@ -1,3 +1,15 @@
+/**
+ * @file app/profile/edit/page.tsx
+ * @description Profile edit page — server shell that loads current data.
+ *
+ * Server Component. Fetches the authenticated user and their profile,
+ * then passes the current values as props to EditProfileForm.
+ * Redirects to /login if no session exists.
+ *
+ * Architecture:
+ * EditProfilePage (Server Component) — fetches data, handles auth redirect
+ *   └── EditProfileForm (Client Component) — form state, live preview, mutation
+ */
 import { createClient } from '@myapp/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'

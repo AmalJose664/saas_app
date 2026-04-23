@@ -1,3 +1,12 @@
+/**
+ * @file app/page.tsx
+ * @description Public landing page — accessible without authentication.
+ *
+ * Static marketing page with a navbar and hero section.
+ * Links to /login for sign-in and /dashboard for direct access
+ * (middleware will redirect unauthenticated users to /login).
+ */
+
 import Link from 'next/link'
 
 export default function Home() {

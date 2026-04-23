@@ -1,14 +1,29 @@
+/**
+ * @file middleware.ts
+ * @description Route protection middleware for the user app.
+ *
+ * Runs on every request matched by `config.matcher`.
+ * Checks for a valid Supabase session and enforces two rules:
+ *
+ * 1. Protected routes (/dashboard, /profile, /orders, /payments, /plans)
+ *    → redirect to /login if no session
+ *
+ * 2. /login with an active session
+ *    → redirect to /dashboard (already signed in)
+ *
+ * Auth cookies are refreshed on every request by passing them through
+ * the Supabase SSR client's setAll handler.
+ */
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { jwtDecode } from "jwt-decode"
-
 
 const protectedRoutes = ['/dashboard', '/orders', '/payments', '/profile', '/plans']
 
 export async function middleware(request: NextRequest) {
 	const response = NextResponse.next()
 	const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -27,36 +42,19 @@ export async function middleware(request: NextRequest) {
 		request.nextUrl.pathname.startsWith(route)
 	)
 
-
-	console.log({ isProtectedRoute, session: !!session ? "yes" : "No" })
-
-
 	if (isProtectedRoute) {
-		console.log("protected route ", request.url)
 		if (!session) {
-			console.log("from no session")
 			return NextResponse.redirect(new URL('/login', request.url))
 		}
-		else {
-			return response
-		}
-	} else {
-		console.log("not protected route", request.url)
-		if (session) {
-			console.log("Yes session")
-			if (isLoginPage) {
-				console.log("login page with session")
-				return NextResponse.redirect(new URL('/dashboard', request.url))
-			} else {
-				console.log("Not login")
-				return response
-			}
-		} else {
-			console.log("Not session")
-			return response
-		}
+		return response
 	}
 
+	// Redirect authenticated users away from /login
+	if (session && isLoginPage) {
+		return NextResponse.redirect(new URL('/dashboard', request.url))
+	}
+
+	return response
 }
 
 export const config = {

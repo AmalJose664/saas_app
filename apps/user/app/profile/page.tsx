@@ -1,3 +1,13 @@
+/**
+ * @file app/profile/page.tsx
+ * @description User profile view — read-only display of account details.
+ *
+ * Server Component. Fetches the authenticated user and their profile row
+ * from the `profiles` table. Redirects to /login if no session exists.
+ *
+ * Displays: avatar, full name, username, email, member since date.
+ * Links to /profile/edit for making changes.
+ */
 import { createClient } from '@myapp/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
