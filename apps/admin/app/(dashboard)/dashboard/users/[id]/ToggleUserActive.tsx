@@ -5,6 +5,8 @@
  * Architecture:
  * UI (this component)
  *   ↓ calls
+ * TanStack Query Hook (lib/users/hooks.ts::useToggleUserActive)
+ *   ↓ calls
  * Server Action (lib/users/actions.ts::toggleUserActiveAction)
  *   ↓ calls
  * Service (lib/users/service.ts::updateUser)
@@ -13,15 +15,14 @@
  *   ↓ calls
  * Supabase (@myapp/supabase/server)
  *
- * Uses useTransition to show pending state without blocking the UI.
- * Shows toast notifications via sonner on success / error.
+ * Cache invalidation: On success, the hook automatically invalidates
+ * the user detail + users list caches, so data refreshes without
+ * manual page reload. Toast notifications are handled by the hook.
  */
 
 'use client';
 
-import { useTransition } from 'react';
-import { toast } from 'sonner';
-import { toggleUserActiveAction } from '../../../../../lib/users/actions';
+import { useToggleUserActive } from '../../../../../lib/users/hooks';
 
 /** Props for the ToggleUserActive button */
 interface ToggleUserActiveProps {
@@ -34,28 +35,27 @@ interface ToggleUserActiveProps {
 /**
  * ToggleUserActive — renders a button that activates or deactivates a user.
  *
+ * Uses the useToggleUserActive TanStack Query mutation hook for:
+ * - Automatic loading state (isPending)
+ * - Toast notifications on success/error
+ * - Cache invalidation across the app
+ * - Retry on network failures
+ *
  * @param userId — the profiles.id to update
  * @param isActive — current value of profiles.is_active
  */
 export default function ToggleUserActive({ userId, isActive }: ToggleUserActiveProps) {
 	// ─── Hooks ───────────────────────────────────────────────────
-	const [isPending, startTransition] = useTransition();
+	const { mutate, isPending } = useToggleUserActive();
 
 	// ─── Handlers ────────────────────────────────────────────────
 
 	/**
-	 * Calls the server action to flip the user's is_active flag.
-	 * Displays a toast on success or failure.
+	 * Triggers the TanStack Query mutation to flip the user's is_active flag.
+	 * The hook handles server calls, toast notifications, and cache invalidation.
 	 */
 	const handleToggle = () => {
-		startTransition(async () => {
-			const result = await toggleUserActiveAction(userId, !isActive);
-			if (!result.success) {
-				toast.error(result.error);
-			} else {
-				toast.success(isActive ? 'User deactivated.' : 'User activated.');
-			}
-		});
+		mutate(userId);
 	};
 
 	// ─── Render ──────────────────────────────────────────────────

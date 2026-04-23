@@ -7,6 +7,8 @@
  *   ↓ onClick
  * ConfirmationModal (@repo/ui/ConfirmModel)
  *   ↓ onConfirm
+ * TanStack Query Hook (lib/plans/hooks.ts::useDeletePlan)
+ *   ↓ calls
  * Server Action (lib/plans/actions.ts::deletePlanAction)
  *   ↓ calls
  * Service (lib/plans/service.ts::deletePlan)
@@ -14,6 +16,10 @@
  * Repository (lib/plans/repository.ts::dbDeletePlan)
  *   ↓ calls
  * Supabase Server Client
+ *
+ * The useDeletePlan hook handles toast notifications, cache invalidation,
+ * and loading state automatically. On success, it invalidates the plans
+ * list cache so the UI refreshes without a manual page reload.
  *
  * Uses React Portals to render the modal outside the normal DOM tree
  * so it can overlay the entire page with a backdrop.
@@ -23,11 +29,8 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
 import ConfirmationModal from '@repo/ui/ConfirmModel';
-import { toast } from 'sonner';
-import { deletePlanAction } from '../lib/plans/actions';
+import { useDeletePlan } from '../lib/plans/hooks';
 
 /** Props for the DeletePlanButton component */
 interface DeletePlanButtonProps {
@@ -41,22 +44,14 @@ interface DeletePlanButtonProps {
  * @param planId — the UUID of the plan to delete
  */
 export default function DeletePlanButton({ planId }: DeletePlanButtonProps) {
-	const router = useRouter()
-	const [isOpen, setIsOpen] = useState(false)
-	const [isPending, startTransition] = useTransition()
+	const [isOpen, setIsOpen] = useState(false);
+	const { mutate, isPending } = useDeletePlan();
 
 	const handleDelete = () => {
-		startTransition(async () => {
-			const result = await deletePlanAction(planId)
-			if (!result.success) {
-				toast.error(result.error)
-			} else {
-				toast.success('Plan deleted.')
-				setIsOpen(false)
-				router.refresh()
-			}
-		})
-	}
+		mutate(planId, {
+			onSuccess: () => setIsOpen(false),
+		});
+	};
 
 	return (
 		<>

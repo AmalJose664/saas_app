@@ -40,6 +40,20 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 - **Root page (`/`):** Converted to server component — redirects authenticated users to `/dashboard`
 - **Build fixes:** Fixed Zod validation syntax for newer version, fixed `JSX.Element` namespace error
 
+### TanStack Query Integration
+- **Installed `@tanstack/react-query` + `@tanstack/react-query-devtools`**
+- **Created `lib/query-client.ts`** — singleton QueryClient with 30s stale time, 5min GC, 3x retry, refetch on focus
+- **Created domain-specific hooks** in `lib/{users,plans,orders,subscriptions}/hooks.ts`:
+  - `useUsers` — paginated with placeholder data (smooth pagination)
+  - `useUser` — individual profile with background refresh
+  - `useToggleUserActive` — mutation with automatic cache invalidation
+  - `usePlans` / `usePlan` — cached plan list + detail
+  - `useCreatePlan` / `useUpdatePlan` / `useDeletePlan` — mutations with list invalidation
+  - `useOrders` / `useSubscriptions` — domain-specific queries
+- **Updated components** to use hooks: `ToggleUserActive.tsx`, `DeletePlan.tsx`
+- **Wrapped app** in `QueryProvider` (layout.tsx) for React Query context
+- **Query key factories** per domain for consistent cache management
+
 ### Documentation
 - Added comprehensive JSDoc to all pages, components, middleware, and service files
 - Each file includes ASCII architecture flow diagrams showing the call chain
@@ -120,6 +134,59 @@ lib/
 | Server Action | `actions.ts` | `'use server'` — mutations, validation |
 | Service | `service.ts` | Business logic, error wrapping |
 | Repository | `repository.ts` | Raw Supabase, no logic |
+
+---
+
+## TanStack Query (React Query) — Client State Layer
+
+On top of the Server Component / Server Action architecture, **TanStack Query** adds a client-side caching and synchronization layer for interactive UI components.
+
+### Why TanStack Query?
+
+| Feature | Without React Query | With React Query |
+|---------|--------------------|------------------|
+| **Live dashboard** | Manual `setInterval` + fetch | `refetchInterval` with stale-while-revalidate |
+| **Mutation → UI refresh** | `router.refresh()` or full reload | Automatic cache invalidation + background refetch |
+| **Multiple tabs** | Stale data across tabs | `refetchOnWindowFocus` keeps all tabs in sync |
+| **Offline resilience** | Failed mutations lost | Automatic retry with exponential backoff |
+| **Pagination/search** | Lift state to URL, full reload | Client-side cache, instant UI |
+
+### Where We Use It
+
+```
+Client Component (e.g. ToggleUserActive, DeletePlan)
+        ↓
+  TanStack Query Hook (lib/*/hooks.ts::useMutation / useQuery)
+        ↓
+  Server Action (lib/*/actions.ts)   ← still validates, still 'use server'
+        ↓
+  Service → Repository → Supabase
+```
+
+**Rule:** Server Components (`page.tsx`, `*Table.tsx`) still fetch directly via service layer on the server. TanStack Query is used **only** in interactive Client Components for mutations and real-time data.
+
+### Query Key Conventions
+
+Every domain has a centralized key factory in its `hooks.ts`:
+
+| Domain | Key Pattern | Example |
+|--------|-------------|---------|
+| Dashboard | `['dashboard', 'stats']` | `queryKey: ['dashboard', 'stats']` |
+| Users | `['users', 'list', search, page]` | `queryKey: usersKeys.list('admin', 1)` |
+| Plans | `['plans', 'list']` | `queryKey: plansKeys.list()` |
+| Orders | `['orders', 'byUser', userId]` | `queryKey: ordersKeys.byUser(id)` |
+| Subscriptions | `['subscriptions', 'list']` | `queryKey: subscriptionsKeys.list()` |
+
+**Invalidation pattern:** After a mutation (e.g. `toggleUserActive`), the hook calls `queryClient.invalidateQueries({ queryKey: usersKeys.all })` to refresh all dependent UI automatically.
+
+### Configuration
+
+`lib/query-client.ts` configures a singleton `QueryClient`:
+
+- **Stale time:** 30s — reduces redundant fetches while keeping data fresh
+- **GC time:** 5min — garbage collects unused cache
+- **Retry:** 3x exponential backoff — handles transient network issues
+- **Refetch on focus:** Enabled — dashboard metrics update when admin returns
 
 ---
 
