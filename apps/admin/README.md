@@ -218,6 +218,8 @@ Request → middleware.ts
 | `@repo/database` | Generated Supabase DB types (TablesInsert, TablesUpdate) |
 | `@repo/validations` | Zod schemas for forms (plans, profiles) |
 | `@repo/ui` | Shared components (ConfirmModal, Logout) |
+| `@tanstack/react-query` | TanStack Query for client-side data fetching, caching, and mutations |
+| `@tanstack/react-query-devtools` | React Query Devtools for debugging cache state |
 | `jwt-decode` | Reading `user_role` from JWT in middleware |
 | `sonner` | Toast notifications |
 
