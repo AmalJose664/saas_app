@@ -16,9 +16,10 @@
  * deletePlanAction Server Action → service → repository.
  */
 
-import Link from 'next/link';
-import DeletePlanButton from '../../../../components/DeletePlan';
-import { getAllPlans } from '../../../../lib/plans/service';
+import Link from 'next/link'
+import DeletePlanButton from '../../../../components/DeletePlan'
+import { getAllPlans } from '../../../../lib/plans/service'
+import type { Plan } from '../../../../lib/plans/service'
 
 /**
  * ManagePlans — server component that renders the subscription plans grid.
@@ -27,18 +28,17 @@ import { getAllPlans } from '../../../../lib/plans/service';
  */
 export default async function ManagePlans() {
 	// ─── Fetch all plans through the service layer ────────────────
-	const result = await getAllPlans();
-
+	const result = await getAllPlans()
 	if (!result.success) {
 		return (
 			<div className="p-6 bg-red-50 border border-red-200 rounded-lg text-red-600">
 				<p className="font-semibold">Error loading plans</p>
 				<p className="text-sm">{result.error}</p>
 			</div>
-		);
+		)
 	}
 
-	const plans = result.data;
+	const plans: Plan[] = result.data
 
 	// ─── Render ──────────────────────────────────────────────────
 	return (

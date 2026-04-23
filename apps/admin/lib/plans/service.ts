@@ -6,6 +6,7 @@ import {
 	dbDeletePlan,
 } from './repository'
 import type { CreatePlanInput, UpdatePlanInput } from '@repo/validations'
+import type { Tables } from '@repo/database'
 
 /**
  * Plans Service
@@ -17,17 +18,29 @@ import type { CreatePlanInput, UpdatePlanInput } from '@repo/validations'
  * Called by lib/plans/actions.ts (mutations) and Server Components (reads).
  */
 
+// ─── Domain types ─────────────────────────────────────────────────────────────
+
+/** A single subscription plan row as returned from the DB */
+export type Plan = Tables<'plan'>
+
+/** Generic service result wrapper used across all services */
 export type ServiceResult<T> =
 	| { success: true; data: T }
 	| { success: false; error: string }
 
-export async function getAllPlans() {
+/** Return type of getAllPlans */
+export type GetAllPlansResult = ServiceResult<Plan[]>
+
+/** Return type of getPlanById */
+export type GetPlanByIdResult = ServiceResult<Plan | null>
+
+export async function getAllPlans(): Promise<GetAllPlansResult> {
 	const { data, error } = await dbGetAllPlans()
 	if (error) return { success: false as const, error: error.message }
 	return { success: true as const, data: data ?? [] }
 }
 
-export async function getPlanById(id: string) {
+export async function getPlanById(id: string): Promise<GetPlanByIdResult> {
 	const { data, error } = await dbGetPlanById(id)
 	if (error) return { success: false as const, error: error.message }
 	return { success: true as const, data }

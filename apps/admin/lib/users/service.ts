@@ -4,7 +4,7 @@ import {
 	dbGetUsersCount,
 	dbUpdateUser,
 } from './repository'
-import type { TablesUpdate } from '@repo/database'
+import type { TablesUpdate, Tables } from '@repo/database'
 
 /**
  * Users Service
@@ -17,9 +17,30 @@ import type { TablesUpdate } from '@repo/database'
  * USERS_PAGE_SIZE controls how many rows are returned per page.
  */
 
+// ─── Domain types ─────────────────────────────────────────────────────────────
+
+/** A single user profile row as returned from the DB */
+export type UserProfile = Tables<'profiles'>
+
+/** Return type of getUsersPaginated */
+export type PaginatedUsersResult =
+	| {
+		success: true
+		data: UserProfile[]
+		count: number
+		totalPages: number
+		currentPage: number
+	}
+	| { success: false; error: string }
+
+/** Return type of getUserById */
+export type GetUserByIdResult =
+	| { success: true; data: UserProfile }
+	| { success: false; error: string }
+
 export const USERS_PAGE_SIZE = 10
 
-export async function getUsersPaginated(opts: { search: string; page: number }) {
+export async function getUsersPaginated(opts: { search: string; page: number }): Promise<PaginatedUsersResult> {
 	const currentPage = Math.max(1, opts.page)
 	const from = (currentPage - 1) * USERS_PAGE_SIZE
 	const to = from + USERS_PAGE_SIZE - 1
@@ -41,7 +62,7 @@ export async function getUsersPaginated(opts: { search: string; page: number }) 
 	}
 }
 
-export async function getUserById(id: string) {
+export async function getUserById(id: string): Promise<GetUserByIdResult> {
 	const { data, error } = await dbGetUserById(id)
 	if (error) return { success: false as const, error: error.message }
 	return { success: true as const, data }

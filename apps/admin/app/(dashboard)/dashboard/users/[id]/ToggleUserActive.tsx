@@ -55,19 +55,18 @@ export default function ToggleUserActive({ userId, isActive }: ToggleUserActiveP
 	 * The hook handles server calls, toast notifications, and cache invalidation.
 	 */
 	const handleToggle = () => {
-		mutate(userId);
+		mutate({ id: userId, isActive: !isActive });
 	};
-
+	console.log(isActive, "value we get")
 	// ─── Render ──────────────────────────────────────────────────
 	return (
 		<button
 			onClick={handleToggle}
 			disabled={isPending}
-			className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-				isActive
-					? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-					: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200'
-			}`}
+			className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isActive
+				? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+				: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200'
+				}`}
 		>
 			{isPending ? 'Updating...' : isActive ? 'Deactivate User' : 'Activate User'}
 		</button>

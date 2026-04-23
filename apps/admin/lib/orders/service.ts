@@ -1,4 +1,5 @@
 import { dbGetOrders, dbGetOrdersCount, dbGetOrdersRevenue } from './repository'
+import type { Tables } from '@repo/database'
 
 /**
  * Orders Service
@@ -11,7 +12,19 @@ import { dbGetOrders, dbGetOrdersCount, dbGetOrdersRevenue } from './repository'
  * Orders are read-only from the admin — no mutation actions exist here.
  */
 
-export async function getOrders(opts: { limit?: number; userId?: string } = {}) {
+// ─── Domain types ─────────────────────────────────────────────────────────────
+
+/** An order row joined with the profile (full_name, email) */
+export type OrderWithProfile = Tables<'orders'> & {
+	profiles: Pick<Tables<'profiles'>, 'full_name' | 'email'> | null
+}
+
+/** Return type of getOrders */
+export type GetOrdersResult =
+	| { success: true; data: OrderWithProfile[] }
+	| { success: false; error: string }
+
+export async function getOrders(opts: { limit?: number; userId?: string } = {}): Promise<GetOrdersResult> {
 	const { data, error } = await dbGetOrders(opts)
 	if (error) return { success: false as const, error: error.message }
 	return { success: true as const, data: data ?? [] }

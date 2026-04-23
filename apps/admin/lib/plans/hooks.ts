@@ -15,12 +15,21 @@
 
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { getAllPlans, getPlanById } from './service';
 import { createPlanAction, updatePlanAction, deletePlanAction } from './actions';
 
-/** Query key factory for plans queries */
+/**
+ * Plans client-side hooks
+ *
+ * These hooks handle mutations only. Reads (list, detail) are done
+ * server-side in Server Components — do not import service or repository
+ * functions here, as they depend on next/headers and cannot run in the browser.
+ *
+ * Flow: hook → server action → service → repository → Supabase
+ */
+
+/** Query key factory — used to invalidate caches after mutations */
 export const plansKeys = {
 	all: ['plans'] as const,
 	list: () => [...plansKeys.all, 'list'] as const,
@@ -28,51 +37,14 @@ export const plansKeys = {
 };
 
 /**
- * usePlans — cached subscription plans list.
- *
- * Data refetches in background when admin returns to the tab,
- * ensuring the list stays current across multiple admin sessions.
- */
-export function usePlans() {
-	return useQuery({
-		queryKey: plansKeys.list(),
-		queryFn: async () => {
-			const result = await getAllPlans();
-			if (!result.success) throw new Error(result.error);
-			return result.data;
-		},
-	});
-}
-
-/**
- * usePlan — single plan detail with cache pre-population.
- *
- * @param id — Supabase plan UUID
- */
-export function usePlan(id: string) {
-	return useQuery({
-		queryKey: plansKeys.detail(id),
-		queryFn: async () => {
-			const result = await getPlanById(id);
-			if (!result.success) throw new Error(result.error);
-			return result.data;
-		},
-		enabled: !!id,
-	});
-}
-
-/**
- * useCreatePlan — mutation that auto-invalidates the plans list.
- *
- * On success: invalidates plans list cache → UI refreshes automatically.
- * On error: shows toast with server error message.
+ * useCreatePlan — mutation that auto-invalidates the plans list on success.
  */
 export function useCreatePlan() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: async (formData: FormData) => {
-			const result = await createPlanAction(formData);
+			const result = await createPlanAction({ success: true }, formData);
 			if (!result.success) throw new Error(result.error);
 			return result;
 		},
@@ -97,7 +69,7 @@ export function useUpdatePlan() {
 
 	return useMutation({
 		mutationFn: async (formData: FormData) => {
-			const result = await updatePlanAction(formData);
+			const result = await updatePlanAction({ success: true }, formData);
 			if (!result.success) throw new Error(result.error);
 			return result;
 		},

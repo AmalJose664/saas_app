@@ -7,7 +7,7 @@
  *   ↓ instantiated once per session
  * QueryClientProvider (components/QueryProvider.tsx)
  *   ↓ wraps app in layout.tsx
- * React Query Hooks (lib/*/hooks.ts)
+ * React Query Hooks (lib/hooks.ts)
  *   ↓ call
  * Service Layer → Repository → Supabase
  *
