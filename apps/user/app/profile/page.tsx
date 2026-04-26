@@ -11,6 +11,7 @@
 import { createClient } from '@myapp/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function ProfilePage() {
 	const supabase = await createClient()
@@ -43,7 +44,7 @@ export default async function ProfilePage() {
 					>
 						← Back to Dashboard
 					</Link>
-					<h1 className="font-bold text-gray-800">My Profile</h1>
+					<h2 className="font-bold text-gray-800">My Profile</h2>
 				</div>
 			</nav>
 
@@ -52,7 +53,7 @@ export default async function ProfilePage() {
 					{/* Avatar & Name */}
 					<div className="flex flex-col items-center mb-8">
 						{profile?.avatar_url ? (
-							<img
+							<Image width={20} height={20}
 								src={profile.avatar_url}
 								alt="Profile avatar"
 								className="w-20 h-20 rounded-full object-cover border-2 border-blue-100 mb-4"
@@ -86,15 +87,6 @@ export default async function ProfilePage() {
 							</p>
 							<p className="text-gray-800 font-medium">
 								{profile?.full_name || <span className="text-gray-400 italic">Not provided</span>}
-							</p>
-						</div>
-
-						<div className="bg-gray-50 rounded-xl px-5 py-4">
-							<p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-								Username
-							</p>
-							<p className="text-gray-800 font-medium">
-								{profile?.username || <span className="text-gray-400 italic">Not set</span>}
 							</p>
 						</div>
 
