@@ -1,12 +1,14 @@
 /**
  * @file app/(dashboard)/dashboard/plans/edit/[id]/EditPlanForm.tsx
  * @description Client-side form for editing an existing subscription plan.
- * Uses Next.js `useActionState` to integrate with the `updatePlanAction` server action.
+ * Uses the useUpdatePlan hook (TanStack Query) which calls the server action internally.
  * Receives pre-populated default values from the server component wrapper.
  *
  * Architecture:
  * EditPlanForm (Client Component — 'use client')
- *   ↓ form action
+ *   ↓ onSubmit → FormData
+ * useUpdatePlan hook (lib/plans/hooks.ts)
+ *   ↓ calls
  * Server Action (lib/plans/actions.ts::updatePlanAction)
  *   ↓ validates (Zod)
  *   ↓ calls
@@ -16,14 +18,14 @@
  * Plans Repository (lib/plans/repository.ts::dbUpdatePlan)
  *   ↓ calls
  * Supabase Server Client
+ *
+ * On success → hook invalidates cache + navigates to /dashboard/plans
  */
 
 'use client';
 
-import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { updatePlanAction } from '../../../../../../lib/plans/actions';
-import type { ActionResult } from '../../../../../../lib/plans/actions';
+import { useUpdatePlan, PlanActionError } from '../../../../../../lib/plans/hooks';
 
 /** Shape of the pre-populated default values passed from the server */
 interface DefaultValues {
@@ -47,9 +49,6 @@ interface EditPlanFormProps {
 	defaultValues: DefaultValues;
 }
 
-/** Default form state for useActionState */
-const initialState: ActionResult = { success: true };
-
 /**
  * EditPlanForm — client-side form for updating a subscription plan.
  *
@@ -57,10 +56,19 @@ const initialState: ActionResult = { success: true };
  * @param defaultValues — pre-populated values from the server
  */
 export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
-	const router = useRouter()
-	const [state, formAction, isPending] = useActionState(updatePlanAction, initialState)
+	const router = useRouter();
+	const { mutate, isPending, error } = useUpdatePlan();
 
-	const fieldErrors = !state.success ? (state.fieldErrors ?? {}) : {}
+	const fieldErrors = error instanceof PlanActionError ? (error.fieldErrors ?? {}) : {};
+	const globalError = error && !(error instanceof PlanActionError && error.fieldErrors)
+		? error.message
+		: null;
+
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.currentTarget);
+		mutate(formData);
+	};
 
 	return (
 		<div className="min-h-screen bg-slate-50 p-8">
@@ -76,13 +84,13 @@ export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
 				<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
 					<h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Subscription Plan</h1>
 
-					{!state.success && state.error && !state.fieldErrors && (
+					{globalError && (
 						<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-							{state.error}
+							{globalError}
 						</div>
 					)}
 
-					<form action={formAction} className="space-y-6">
+					<form onSubmit={handleSubmit} className="space-y-6">
 						<input type="hidden" name="id" value={id} />
 
 						<div>
@@ -97,6 +105,7 @@ export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
 							/>
 							{fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
 						</div>
+
 						<div className="grid grid-cols-2 gap-4">
 							<div>
 								<label className="block text-sm font-medium text-slate-700 mb-1">Amount (in ₹)</label>
@@ -169,5 +178,5 @@ export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
 				</div>
 			</div>
 		</div>
-	)
+	);
 }

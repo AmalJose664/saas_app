@@ -48,7 +48,8 @@ export default async function Dashboard({
 
 	return (
 		<>
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+			<h3>Overview</h3>
+			<div className="grid mt-4 grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 				<StatCard
 					title="Total Customers"
 					value={stats.userCount.toLocaleString('en-IN')}

@@ -48,7 +48,7 @@ export default async function OrdersTable({ limit, userId }: OrdersTableProps) {
 	const orders = result.data
 
 	return (
-		<div className="overflow-x-auto bg-white rounded-xl border border-gray-200">
+		<div className="overflow-x-auto mt-4 bg-white rounded-xl border border-gray-200">
 			<table className="w-full text-left border-collapse">
 				<thead>
 					<tr className="bg-gray-50 border-b border-gray-200">
@@ -78,10 +78,10 @@ export default async function OrdersTable({ limit, userId }: OrdersTableProps) {
 							</td>
 							<td className="px-6 py-4">
 								<span className={`px-2.5 py-1 rounded-full text-xs font-medium ${order.status === 'active'
-										? 'bg-emerald-50 text-emerald-700'
-										: order.status === 'cancelled'
-											? 'bg-red-50 text-red-700'
-											: 'bg-amber-50 text-amber-700'
+									? 'bg-emerald-50 text-emerald-700'
+									: order.status === 'cancelled'
+										? 'bg-red-50 text-red-700'
+										: 'bg-amber-50 text-amber-700'
 									}`}>
 									{order.status}
 								</span>

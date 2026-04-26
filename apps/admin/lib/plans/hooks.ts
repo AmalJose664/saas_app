@@ -16,6 +16,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createPlanAction, updatePlanAction, deletePlanAction } from './actions';
 
@@ -36,24 +37,37 @@ export const plansKeys = {
 	detail: (id: string) => [...plansKeys.all, 'detail', id] as const,
 };
 
+/** Extended error that carries field-level validation errors from the server action */
+export class PlanActionError extends Error {
+	fieldErrors?: Record<string, string>;
+	constructor(message: string, fieldErrors?: Record<string, string>) {
+		super(message);
+		this.fieldErrors = fieldErrors;
+	}
+}
+
 /**
  * useCreatePlan — mutation that auto-invalidates the plans list on success.
  */
 export function useCreatePlan() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 
 	return useMutation({
 		mutationFn: async (formData: FormData) => {
 			const result = await createPlanAction({ success: true }, formData);
-			if (!result.success) throw new Error(result.error);
+			if (!result.success) throw new PlanActionError(result.error, result.fieldErrors);
 			return result;
 		},
 		onSuccess: () => {
 			toast.success('Plan created successfully');
 			queryClient.invalidateQueries({ queryKey: plansKeys.list() });
+			router.push('/dashboard/plans');
 		},
-		onError: (error: Error) => {
-			toast.error(error.message || 'Failed to create plan');
+		onError: (error: PlanActionError) => {
+			if (!error.fieldErrors) {
+				toast.error(error.message || 'Failed to create plan');
+			}
 		},
 	});
 }
@@ -66,23 +80,23 @@ export function useCreatePlan() {
  */
 export function useUpdatePlan() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 
 	return useMutation({
 		mutationFn: async (formData: FormData) => {
 			const result = await updatePlanAction({ success: true }, formData);
-			if (!result.success) throw new Error(result.error);
+			if (!result.success) throw new PlanActionError(result.error, result.fieldErrors);
 			return result;
 		},
-		onSuccess: (data) => {
+		onSuccess: () => {
 			toast.success('Plan updated successfully');
 			queryClient.invalidateQueries({ queryKey: plansKeys.list() });
-			// Also invalidate the specific plan detail if id is in the response
-			if (data && 'id' in data && typeof data.id === 'string') {
-				queryClient.invalidateQueries({ queryKey: plansKeys.detail(data.id) });
-			}
+			router.push('/dashboard/plans');
 		},
-		onError: (error: Error) => {
-			toast.error(error.message || 'Failed to update plan');
+		onError: (error: PlanActionError) => {
+			if (!error.fieldErrors) {
+				toast.error(error.message || 'Failed to update plan');
+			}
 		},
 	});
 }

@@ -155,10 +155,10 @@ export default async function UsersTable({ search = '', page = 1 }: UsersTablePr
 
 function buildHref(search: string, page: number) {
 	const params = new URLSearchParams()
-	params.set('tab', 'users')
 	if (search) params.set('search', search)
 	if (page > 1) params.set('page', String(page))
-	return `/dashboard?${params.toString()}`
+	const qs = params.toString()
+	return `/dashboard/users${qs ? `?${qs}` : ''}`
 }
 
 function PaginationLink({

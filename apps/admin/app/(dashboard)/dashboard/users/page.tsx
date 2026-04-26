@@ -15,20 +15,26 @@
  * Supabase Server Client
  */
 
-import UsersTable from './UsersTable';
+import UsersTable from './UsersTable'
 
 /**
- * UsersPage — server component wrapper for the user directory.
+ * UsersPage — reads search and page from URL query params and passes
+ * them to UsersTable for server-side filtering and pagination.
  *
- * @returns JSX.Element
+ * @param searchParams - URL query params: ?search=...&page=...
  */
-export default function UsersPage() {
+export default async function UsersPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+	const resolved = await searchParams
+	const search = (resolved.search as string) || ''
+	const page = parseInt((resolved.page as string) || '1', 10)
+
 	return (
 		<div>
-			<h2>
-				Users
-			</h2>
-			<UsersTable />
+			<UsersTable search={search} page={page} />
 		</div>
-	);
+	)
 }

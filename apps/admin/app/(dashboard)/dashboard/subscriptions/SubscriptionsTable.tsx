@@ -37,7 +37,7 @@ export default async function SubscriptionsTable() {
 	const subs = result.data
 
 	return (
-		<div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+		<div className="bg-white mt-4 rounded-xl border border-gray-200 overflow-hidden">
 			<table className="w-full text-left">
 				<thead className="bg-gray-50 border-b border-gray-200">
 					<tr>
@@ -80,9 +80,9 @@ export default async function SubscriptionsTable() {
 							<td className="px-6 py-4">
 								<div className="flex items-center gap-2">
 									<div className={`w-2 h-2 rounded-full ${sub.status === 'active' ? 'bg-emerald-500' :
-											sub.status === 'cancelled' ? 'bg-red-500' :
-												sub.status === 'failed' ? 'bg-orange-500' :
-													'bg-gray-400'
+										sub.status === 'cancelled' ? 'bg-red-500' :
+											sub.status === 'failed' ? 'bg-orange-500' :
+												'bg-gray-400'
 										}`} />
 									<span className="text-sm text-gray-700 capitalize">{sub.status}</span>
 								</div>

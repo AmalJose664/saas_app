@@ -1,11 +1,13 @@
 /**
  * @file app/(dashboard)/dashboard/plans/add/page.tsx
  * @description Client-side form for creating a new subscription plan.
- * Uses Next.js `useActionState` to integrate with Server Actions.
+ * Uses the useCreatePlan hook (TanStack Query) which calls the server action internally.
  *
  * Architecture:
  * AddPlan (Client Component — 'use client')
- *   ↓ form action
+ *   ↓ onSubmit → FormData
+ * useCreatePlan hook (lib/plans/hooks.ts)
+ *   ↓ calls
  * Server Action (lib/plans/actions.ts::createPlanAction)
  *   ↓ validates (Zod schema)
  *   ↓ calls
@@ -16,29 +18,31 @@
  *   ↓ calls
  * Supabase Server Client
  *
- * On success → revalidates cache + redirects to /dashboard/plans
+ * On success → hook invalidates cache + navigates to /dashboard/plans
  */
 
 'use client';
 
-import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createPlanAction } from '../../../../../lib/plans/actions';
-import type { ActionResult } from '../../../../../lib/plans/actions';
-
-/** Default form state for useActionState */
-const initialState: ActionResult = { success: true };
+import { useCreatePlan, PlanActionError } from '../../../../../lib/plans/hooks';
 
 /**
  * AddPlan — client component for creating subscription plans.
- *
- * @returns JSX.Element
  */
 export default function AddPlan() {
-	const router = useRouter()
-	const [state, formAction, isPending] = useActionState(createPlanAction, initialState)
+	const router = useRouter();
+	const { mutate, isPending, error } = useCreatePlan();
 
-	const fieldErrors = !state.success ? (state.fieldErrors ?? {}) : {}
+	const fieldErrors = error instanceof PlanActionError ? (error.fieldErrors ?? {}) : {};
+	const globalError = error && !(error instanceof PlanActionError && error.fieldErrors)
+		? error.message
+		: null;
+
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.currentTarget);
+		mutate(formData);
+	};
 
 	return (
 		<div className="min-h-screen bg-slate-50 p-8">
@@ -54,13 +58,13 @@ export default function AddPlan() {
 				<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
 					<h1 className="text-2xl font-bold text-slate-900 mb-6">Create New Subscription Plan</h1>
 
-					{!state.success && state.error && !state.fieldErrors && (
+					{globalError && (
 						<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-							{state.error}
+							{globalError}
 						</div>
 					)}
 
-					<form action={formAction} className="space-y-6">
+					<form onSubmit={handleSubmit} className="space-y-6">
 
 						<div>
 							<label className="block text-sm font-medium text-slate-700 mb-1">Plan Name</label>
@@ -117,7 +121,6 @@ export default function AddPlan() {
 						</div>
 
 						<div className="flex items-center gap-3">
-
 							<input type="hidden" name="is_active" value="false" />
 							<input
 								type="checkbox"
@@ -146,5 +149,5 @@ export default function AddPlan() {
 				</div>
 			</div>
 		</div>
-	)
+	);
 }

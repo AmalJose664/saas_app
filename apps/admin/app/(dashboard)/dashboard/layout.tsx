@@ -50,7 +50,7 @@ export default async function DashboardLayout({
 
 			<div className="flex-1 flex flex-col overflow-hidden">
 				<header className="h-16 py-2 bg-white border-b border-gray-200 flex items-center justify-between px-8">
-					<h2 className="text-lg font-medium text-gray-700 capitalize">{pathname}</h2>
+					<h2 className="text-lg font-medium text-gray-700 capitalize">Dashboard</h2>
 					<Logout />
 				</header>
 

@@ -25,7 +25,7 @@ import OrdersTable from './OrdersTable';
 export default function OrdersPage() {
 	return (
 		<div>
-			<h2>Orders</h2>
+			<h3>Orders</h3>
 			<OrdersTable />
 		</div>
 	);

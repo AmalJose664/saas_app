@@ -40,7 +40,8 @@ export default function UsersSearchInput({ defaultValue }: UsersSearchInputProps
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			const value = e.target.value;
 			const params = new URLSearchParams(searchParams.toString());
-			params.set('tab', 'users');
+			// Remove stale tab/page params — we're on a dedicated path now
+			params.delete('tab');
 			params.delete('page');
 
 			if (value.trim()) {
@@ -49,8 +50,9 @@ export default function UsersSearchInput({ defaultValue }: UsersSearchInputProps
 				params.delete('search');
 			}
 
+			const qs = params.toString()
 			startTransition(() => {
-				router.replace(`/dashboard?${params.toString()}`);
+				router.replace(`/dashboard/users${qs ? `?${qs}` : ''}`);
 			});
 		},
 		[router, searchParams]

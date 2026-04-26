@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createPlanSchema, updatePlanSchema } from '@repo/validations'
 import { createPlan, updatePlan, deletePlan } from './service'
 
@@ -43,7 +42,7 @@ export async function createPlanAction(_prev: ActionResult, formData: FormData):
 	if (!result.success) return { success: false, error: result.error }
 
 	revalidatePath('/dashboard/plans')
-	redirect('/dashboard/plans')
+	return { success: true as const }
 }
 
 // ─── Update ──────────────────────────────────────────────────────────────────
@@ -71,7 +70,7 @@ export async function updatePlanAction(_prev: ActionResult, formData: FormData):
 	if (!result.success) return { success: false, error: result.error }
 
 	revalidatePath('/dashboard/plans')
-	redirect('/dashboard/plans')
+	return { success: true as const }
 }
 
 // ─── Delete ──────────────────────────────────────────────────────────────────

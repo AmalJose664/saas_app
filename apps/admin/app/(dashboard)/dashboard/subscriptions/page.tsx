@@ -25,7 +25,7 @@ import SubscriptionsTable from './SubscriptionsTable';
 export default function SubscriptionsPage() {
 	return (
 		<div>
-			<h2>Subscriptions</h2>
+			<h3>Subscriptions</h3>
 			<SubscriptionsTable />
 		</div>
 	);
