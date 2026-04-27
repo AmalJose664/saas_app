@@ -1,5 +1,5 @@
 /**
- * @file app/auth/callback/route.ts
+ * @file app/(auth)/auth/callback/route.ts
  * @description OAuth callback handler for Google sign-in.
  *
  * Supabase redirects here after the user approves Google OAuth.
