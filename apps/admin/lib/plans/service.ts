@@ -7,7 +7,7 @@ import {
 } from './repository'
 import type { CreatePlanInput, UpdatePlanInput } from '@repo/validations'
 import type { Tables } from '@repo/database'
-import { razorpay } from '@myapp/razorpay'
+import { getRazorpay } from '@myapp/razorpay'
 
 /**
  * Plans Service
@@ -50,6 +50,7 @@ export async function getPlanById(id: string): Promise<GetPlanByIdResult> {
 export async function createPlan(input: CreatePlanInput) {
 	let razorpayPlanId: string | null = input.razorpay_plan_id ?? null
 
+	const razorpay = getRazorpay()
 	if (!razorpayPlanId) {
 		try {
 			const rzpPlan = await razorpay.plans.create({
