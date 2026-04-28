@@ -1,0 +1,11 @@
+{
+	"name": "@myapp/razorpay",
+	"version": "0.0.1",
+	"main": "./index.ts",
+	"exports": {
+		".": "./index.ts"
+	},
+	"dependencies": {
+		"razorpay": "^2.9.6"
+	}
+}

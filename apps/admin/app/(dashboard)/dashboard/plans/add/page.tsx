@@ -109,7 +109,7 @@ export default function AddPlan() {
 						</div>
 
 						<div>
-							<label className="block text-sm font-medium text-slate-700 mb-1">Razorpay Plan ID (Optional)</label>
+							<label className="block text-sm font-medium text-slate-700 mb-1">Razorpay Plan ID (Leave blank to create a razorpay plan automatically)</label>
 							<input
 								name="razorpay_plan_id"
 								type="text"
