@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@myapp/supabase/server'
-import { razorpay } from '@myapp/razorpay'
+import { getRazorpay } from '@myapp/razorpay'
 import { getPlanById } from '../plans/service'
 import { createNewSubscription } from './service'
 
@@ -48,6 +48,7 @@ export async function createSubscriptionAction(planId: string): Promise<Subscrib
 	}
 
 	// ── 3. Create Razorpay subscription ───────────────────────────────────────
+	const razorpay = getRazorpay()
 	let rzpSubscription
 	try {
 		rzpSubscription = await razorpay.subscriptions.create({

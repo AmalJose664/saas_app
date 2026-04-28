@@ -11,14 +11,25 @@ import Razorpay from 'razorpay'
  *   RAZORPAY_KEY_SECRET — from Razorpay dashboard (test or live)
  */
 
-if (!process.env.RAZORPAY_KEY_ID) {
-	throw new Error('Missing env: RAZORPAY_KEY_ID')
-}
-if (!process.env.RAZORPAY_KEY_SECRET) {
-	throw new Error('Missing env: RAZORPAY_KEY_SECRET')
-}
+let razorpayInstance: Razorpay | null = null
 
-export const razorpay = new Razorpay({
-	key_id: process.env.RAZORPAY_KEY_ID,
-	key_secret: process.env.RAZORPAY_KEY_SECRET,
-})
+export function getRazorpay() {
+	if (razorpayInstance) return razorpayInstance
+
+	const keyId = process.env.RAZORPAY_KEY_ID
+	const keySecret = process.env.RAZORPAY_KEY_SECRET
+
+	if (!keyId) {
+		throw new Error('Missing env: RAZORPAY_KEY_ID')
+	}
+	if (!keySecret) {
+		throw new Error('Missing env: RAZORPAY_KEY_SECRET')
+	}
+
+	razorpayInstance = new Razorpay({
+		key_id: keyId,
+		key_secret: keySecret,
+	})
+
+	return razorpayInstance
+}

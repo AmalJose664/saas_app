@@ -1,1 +1,1 @@
-export { razorpay } from './src/client'
+export { getRazorpay } from './src/client'
