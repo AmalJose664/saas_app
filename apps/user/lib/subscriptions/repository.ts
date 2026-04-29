@@ -1,32 +1,41 @@
 import { createClient } from '@myapp/supabase/server'
-import { TablesInsert, TablesUpdate } from '@repo/database'
+import { supabaseAdmin } from '@myapp/supabase/admin'
+import type { TablesInsert, TablesUpdate } from '@repo/database'
 
 /**
  * Subscriptions Repository
  *
  * Raw Supabase access for the `subscriptions` table.
- * All functions return the raw Supabase response and are called only
- * by lib/subscriptions/service.ts.
+ * Two client variants:
+ *
+ * - createClient (session-based) — for Server Components and Server Actions
+ *   where a user session is available (e.g. reading a user's own subscriptions)
+ *
+ * - supabaseAdmin (service role) — for webhook handlers where no user session
+ *   exists. Functions suffixed with Admin use this client.
+ *
+ * Called only by lib/subscriptions/service.ts.
  */
+
+// ─── Session-based (Server Components / Server Actions) ───────────────────────
+
 export async function dbGetSubscriptionById(id: string) {
 	const supabase = await createClient()
-	return supabase.from("subscriptions").select("*").eq('id', id).single()
+	return supabase
+		.from('subscriptions')
+		.select('*')
+		.eq('id', id)
+		.single()
 }
 
 export async function dbGetSubscriptionsByUserId(userId: string) {
 	const supabase = await createClient()
-	return supabase.from("subscriptions").select("*").eq('user_id', userId)
-}
-
-export async function dbCreateNewSubscription(orderData: TablesInsert<'subscriptions'>) {
-	const supabase = await createClient()
 	return supabase
 		.from('subscriptions')
-		.insert([orderData])
-		.select()
-		.single()
+		.select('*, plan(*)')
+		.eq('user_id', userId)
+		.order('created_at', { ascending: false })
 }
-
 
 export async function dbUpdateSubscription(id: string, data: TablesUpdate<'subscriptions'>) {
 	const supabase = await createClient()
@@ -44,4 +53,59 @@ export async function dbDeleteSubscription(id: string) {
 		.from('subscriptions')
 		.delete()
 		.eq('id', id)
+}
+
+// ─── Admin / service-role (Webhook handlers) ──────────────────────────────────
+
+
+/**
+ * Create a subscription by its Razorpay subscription ID.
+ * Used in new subscription calls
+ */
+export async function dbCreateNewSubscription(data: TablesInsert<'subscriptions'>) {
+	return supabaseAdmin
+		.from('subscriptions')
+		.insert([data])
+		.select()
+		.single()
+}
+
+/**
+ * Look up a subscription by its Razorpay subscription ID.
+ * Used in webhooks where only the Razorpay ID is available.
+ */
+export async function dbGetSubscriptionByRazorpayId(razorpaySubscriptionId: string) {
+	return supabaseAdmin
+		.from('subscriptions')
+		.select('*')
+		.eq('razorpay_subscription_id', razorpaySubscriptionId)
+		.single()
+}
+
+/**
+ * Update a subscription by its Razorpay subscription ID.
+ * Used in webhooks — no user session available.
+ */
+export async function dbUpdateSubscriptionByRazorpayId(
+	razorpaySubscriptionId: string,
+	data: TablesUpdate<'subscriptions'>
+) {
+	return supabaseAdmin
+		.from('subscriptions')
+		.update(data)
+		.eq('razorpay_subscription_id', razorpaySubscriptionId)
+		.select()
+		.single()
+}
+/**
+ * Update a subscription by its Razorpay subscription ID.
+ * Used in webhooks — no user session available.
+ */
+export async function dbUpdateSubscriptionViaAdmin(id: string, data: TablesUpdate<'subscriptions'>) {
+	return supabaseAdmin
+		.from('subscriptions')
+		.update(data)
+		.eq('id', id)
+		.select()
+		.single()
 }

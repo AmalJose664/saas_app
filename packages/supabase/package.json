@@ -5,7 +5,8 @@
 	"exports": {
 		".": "./index.ts",
 		"./server": "./src/server.ts",
-		"./client": "./src/client.ts"
+		"./client": "./src/client.ts",
+		"./admin": "./src/admin.ts"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "latest",

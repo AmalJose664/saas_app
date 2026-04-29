@@ -1,77 +1,131 @@
+import type { Tables, TablesUpdate } from '@repo/database'
 import type { CreateSubscriptionInput } from '@repo/validations'
-import type { Tables } from '@repo/database'
-import { dbCreateNewSubscription, dbDeleteSubscription, dbGetSubscriptionById, dbGetSubscriptionsByUserId } from './repository';
+import {
+	dbGetSubscriptionById,
+	dbGetSubscriptionsByUserId,
+	dbCreateNewSubscription,
+	dbUpdateSubscription,
+	dbDeleteSubscription,
+	dbGetSubscriptionByRazorpayId,
+	dbUpdateSubscriptionByRazorpayId,
+	dbUpdateSubscriptionViaAdmin,
+} from './repository'
 
 /**
- * Orders Service
+ * Subscriptions Service
  *
- * Business logic for subscription orders. Responsibilities:
- * - Creating new orders, updating, deleting
+ * Business logic for subscription lifecycle. Responsibilities:
  * - Wrapping all results in { success, data } | { success, error }
+ * - Exposing both session-based functions (for Server Components / Actions)
+ *   and admin functions (for webhook handlers)
  *
- * Called by lib/orders/actions.ts (mutations) and Server Components (reads).
+ * Called by:
+ *   - lib/subscriptions/actions.ts (create on user click)
+ *   - app/api/razorpay/webhook/route.ts (status updates from Razorpay events)
+ *   - Server Components (reading user's subscription history)
  */
 
 // ─── Domain types ─────────────────────────────────────────────────────────────
 
-/** A single subscription plan row as returned from the DB */
-export type Subscriptions = Tables<'subscriptions'>
+export type Subscription = Tables<'subscriptions'>
 
-/** Generic service result wrapper used across all services */
 export type ServiceResult<T> =
 	| { success: true; data: T }
 	| { success: false; error: string }
 
-/** Return type of getAllPlans */
-export type GetAllSubscriptionsResult = ServiceResult<Subscriptions[]>
+export type GetSubscriptionResult = ServiceResult<Subscription | null>
+export type GetSubscriptionsResult = ServiceResult<Subscription[]>
 
-/** Return type of getPlanById */
-export type GetSubscriptionByIdResult = ServiceResult<Subscriptions | null>
-export type GetMultipleSubscriptionsResult = ServiceResult<Subscriptions[] | null>
+// ─── Reads (session-based) ────────────────────────────────────────────────────
 
-
-
-export async function getSubscriptionById(id: string): Promise<GetSubscriptionByIdResult> {
+export async function getSubscriptionById(id: string): Promise<GetSubscriptionResult> {
 	const { data, error } = await dbGetSubscriptionById(id)
-	if (error) return { success: false as const, error: error.message }
-	return { success: true as const, data }
+	if (error) return { success: false, error: error.message }
+	return { success: true, data }
 }
 
-
-export async function getSubscriptionsByUserId(userId: string): Promise<GetMultipleSubscriptionsResult> {
+export async function getSubscriptionsByUserId(userId: string): Promise<GetSubscriptionsResult> {
 	const { data, error } = await dbGetSubscriptionsByUserId(userId)
-	if (error) return { success: false as const, error: error.message }
-	return { success: true as const, data }
+	if (error) return { success: false, error: error.message }
+	return { success: true, data: data ?? [] }
+}
+
+// ─── Writes (session-based) ───────────────────────────────────────────────────
+
+
+export async function updateSubscription(
+	id: string,
+	data: TablesUpdate<'subscriptions'>
+): Promise<GetSubscriptionResult> {
+	const { data: updated, error } = await dbUpdateSubscription(id, data)
+	if (error) return { success: false, error: error.message }
+	return { success: true, data: updated }
+}
+
+export async function deleteSubscription(id: string): Promise<ServiceResult<null>> {
+	const { error } = await dbDeleteSubscription(id)
+	if (error) return { success: false, error: error.message }
+	return { success: true, data: null }
 }
 
 
-export async function createNewSubscription(input: CreateSubscriptionInput) {
+
+
+// ─── Webhook helpers (admin / service-role) ───────────────────────────────────
+
+
+/**
+ * createNewSubscription — creates a new subscription using admin permission to bypass rls.
+ * Called after calling @function razorpay.subscriptions.create()
+ */
+export async function createNewSubscription(input: CreateSubscriptionInput): Promise<GetSubscriptionResult> {
 	const { data, error } = await dbCreateNewSubscription({
 		plan_id: input.plan_id,
 		user_id: input.user_id,
-		razorpay_subscription_id: input.razorpay_subscription_id,
-		current_period_end: input.current_period_end?.toISOString(),
-		current_period_start: input.current_period_start?.toISOString(),
+		status: input.status ?? 'pending',
+		razorpay_subscription_id: input.razorpay_subscription_id ?? null,
+		current_period_start: input.current_period_start?.toISOString() ?? null,
+		current_period_end: input.current_period_end?.toISOString() ?? null,
+		cancel_at_period_end: input.cancel_at_period_end ?? false,
 	})
-	if (error) return { success: false as const, error: error.message }
-	return { success: true as const, data }
+	if (error) return { success: false, error: error.message }
+	return { success: true, data }
 }
 
-// export async function updateSubscription(input: UpdatePlanInput) {
-// 	const { id, ...fields } = input
-// 	const { data, error } = await dbUpdateSubscription(id, {
-// 		...(fields.name !== undefined && { name: fields.name }),
-// 		...(fields.amount !== undefined && { amount: Math.round(fields.amount * 100) }),
-// 		...(fields.interval !== undefined && { interval: fields.interval }),
-// 		...(fields.razorpay_plan_id !== undefined && { razorpay_plan_id: fields.razorpay_plan_id ?? null }),
-// 		...(fields.is_active !== undefined && { is_active: fields.is_active }),
-// 	})
-// 	if (error) return { success: false as const, error: error.message }
-// 	return { success: true as const, data }
-// }
+/**
+ * getSubscriptionByRazorpayId — looks up a subscription using the Razorpay
+ * subscription ID (sub_xxx). Used in webhook handlers where only the
+ * Razorpay ID is available in the event payload.
+ */
+export async function getSubscriptionByRazorpayId(razorpaySubscriptionId: string): Promise<GetSubscriptionResult> {
+	const { data, error } = await dbGetSubscriptionByRazorpayId(razorpaySubscriptionId)
+	if (error) return { success: false, error: error.message }
+	return { success: true, data }
+}
 
-export async function deleteSubscription(id: string) {
-	const { error } = await dbDeleteSubscription(id)
-	if (error) return { success: false as const, error: error.message }
-	return { success: true as const }
+/**
+ * updateSubscriptionByRazorpayId — updates a subscription record using the
+ * Razorpay subscription ID. Used in webhook handlers to avoid a separate
+ * lookup + update round trip.
+ */
+export async function updateSubscriptionByRazorpayId(
+	razorpaySubscriptionId: string,
+	data: TablesUpdate<'subscriptions'>
+): Promise<GetSubscriptionResult> {
+	const { data: updated, error } = await dbUpdateSubscriptionByRazorpayId(razorpaySubscriptionId, data)
+	if (error) return { success: false, error: error.message }
+	return { success: true, data: updated }
+}
+
+/**
+ * updateSubscriptionByIdAdmin — updates a subscription record using the
+ * subscription ID. Used in webhook handlers to update with admin permissions to bypass rls.
+ */
+export async function updateSubscriptionByIdAdmin(
+	subscriptionId: string,
+	data: TablesUpdate<'subscriptions'>
+): Promise<GetSubscriptionResult> {
+	const { data: updated, error } = await dbUpdateSubscriptionViaAdmin(subscriptionId, data)
+	if (error) return { success: false, error: error.message }
+	return { success: true, data: updated }
 }

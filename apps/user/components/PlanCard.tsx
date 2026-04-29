@@ -21,6 +21,7 @@ const PlanCard = ({ plan }: PlanCardProps) => {
 				return
 			}
 			// Redirect to Razorpay hosted checkout
+			alert("Heading to " + result.checkoutUrl)
 			window.location.href = result.checkoutUrl
 		} catch {
 			toast.error('Something went wrong. Please try again.')
@@ -60,8 +61,8 @@ const PlanCard = ({ plan }: PlanCardProps) => {
 				onClick={handleSubscribe}
 				disabled={loading || !plan.is_active}
 				className={`w-full py-3 px-4 rounded-lg font-semibold shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed ${plan.name.toLowerCase().includes('pro')
-						? 'bg-blue-600 text-white hover:bg-blue-700'
-						: 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+					? 'bg-blue-600 text-white hover:bg-blue-700'
+					: 'bg-gray-100 text-gray-800 hover:bg-gray-200'
 					}`}
 			>
 				{loading ? 'Redirecting...' : !plan.is_active ? 'Unavailable' : 'Get Started'}

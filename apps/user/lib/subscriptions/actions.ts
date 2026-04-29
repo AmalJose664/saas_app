@@ -62,9 +62,9 @@ export async function createSubscriptionAction(planId: string): Promise<Subscrib
 		return { success: false, error: message }
 	}
 
-	if (!rzpSubscription.short_url) {
-		return { success: false, error: 'Razorpay did not return a checkout URL' }
-	}
+	// if (!rzpSubscription.short_url) {
+	// 	return { success: false, error: 'Razorpay did not return a checkout URL' }
+	// }
 
 	// ── 4. Save pending subscription to DB ────────────────────────────────────
 	const dbResult = await createNewSubscription({
