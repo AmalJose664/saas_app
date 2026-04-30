@@ -1,4 +1,4 @@
-import type { Tables } from '@repo/database'
+import type { Tables, TablesInsert } from '@repo/database'
 import {
 	dbGetPaymentById,
 	dbGetPaymentByRazorpayId,
@@ -59,16 +59,7 @@ export async function getPaymentsByUserId(userId: string): Promise<GetPaymentsRe
 
 // ─── Writes ───────────────────────────────────────────────────────────────────
 
-export interface CreatePaymentInput {
-	/** Internal subscriptions.id (UUID) — not the Razorpay subscription ID */
-	subscription_id: string
-	razorpay_payment_id: string
-	razorpay_signature?: string | null
-	amount: number
-	currency?: string
-	status: string
-	paid_at?: string | null
-}
+
 
 /**
  * createPayment — inserts a new payment record.
@@ -77,13 +68,12 @@ export interface CreatePaymentInput {
  * razorpay_payment_id already exists, returns the existing record
  * instead of inserting a duplicate. This handles Razorpay webhook retries.
  */
-export async function createPayment(input: CreatePaymentInput): Promise<GetPaymentResult> {
+export async function createPayment(input: TablesInsert<'payments'>): Promise<GetPaymentResult> {
 	// Idempotency check — Razorpay may retry webhooks
-	const existing = await dbGetPaymentByRazorpayId(input.razorpay_payment_id)
+	const existing = await dbGetPaymentByRazorpayId(input.razorpay_payment_id as string)
 	if (existing.data) {
 		return { success: true, data: existing.data }
 	}
-
 	const { data, error } = await dbCreatePayment({
 		subscription_id: input.subscription_id,
 		razorpay_payment_id: input.razorpay_payment_id,
@@ -91,7 +81,9 @@ export async function createPayment(input: CreatePaymentInput): Promise<GetPayme
 		amount: input.amount,
 		currency: input.currency ?? 'INR',
 		status: input.status,
-		paid_at: input.paid_at ?? new Date().toISOString(),
+		paid_at: input.paid_at ? new Date().toISOString() : null,
+		...(input.failure_code && { failure_code: input.failure_code }),
+		...(input.failure_reason && { failure_reason: input.failure_reason })
 	})
 
 	if (error) return { success: false, error: error.message }

@@ -3,6 +3,7 @@ import {
 	dbGetUserById,
 	dbGetUsersCount,
 	dbUpdateUser,
+	dbUpdateUserAdmin,
 } from './repository'
 import type { TablesUpdate, Tables } from '@repo/database'
 
@@ -74,6 +75,25 @@ export async function getUsersCount() {
 export async function updateUser(id: string, data: TablesUpdate<'profiles'>): Promise<UpdateUserResult> {
 	const { data: updated, error } = await dbUpdateUser(id, {
 		...data,
+		updated_at: new Date().toISOString(),
+	})
+	if (error) return { success: false, error: error.message }
+	if (!updated) return { success: false, error: 'Update returned no data' }
+	return { success: true, data: updated }
+}
+
+// ─── Admin / service-role (Webhook handlers) ──────────────────────────────────
+
+/**
+ * updateUserRoleAdmin — updates a user's role using the service role key.
+ * Called from webhook handlers to promote/demote users based on subscription
+ *
+ * role: 'pro'  → subscription is active
+ * role: 'user' → subscription cancelled, failed, completed, or expired
+ */
+export async function updateUserRoleAdmin(id: string, role: 'pro' | 'user'): Promise<UpdateUserResult> {
+	const { data: updated, error } = await dbUpdateUserAdmin(id, {
+		role,
 		updated_at: new Date().toISOString(),
 	})
 	if (error) return { success: false, error: error.message }

@@ -3,9 +3,11 @@ import crypto from "crypto"
 import fs from "fs"
 import path from "path"
 import { getSubscriptionByRazorpayId, updateSubscriptionByIdAdmin, updateSubscriptionByRazorpayId } from "../../../../lib/subscriptions/service"
+import { updateUserRoleAdmin } from "../../../../lib/users/service"
 import type { TablesInsert } from "@repo/database"
 import { createPayment } from "../../../../lib/payments/service"
 import { createOrder } from "../../../../lib/orders/service"
+import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils"
 
 /**
  * @file app/api/razorpay/webhook/route.ts
@@ -15,62 +17,12 @@ import { createOrder } from "../../../../lib/orders/service"
  * and payment lifecycle events. Each event is verified via HMAC-SHA256
  * before processing.
  *
- * Signature verification:
- *   HMAC-SHA256(raw_body, RAZORPAY_WEBHOOK_SECRET) === x-razorpay-signature
  *
- * Razorpay retries failed webhooks (non-2xx) up to 3 times with backoff.
- * Always return 200 after signature verification — even for unhandled events.
- *
+ * 
  * DB writes use supabaseAdmin (service role key) because webhook requests
  * have no user session — they come directly from Razorpay's servers.
  *
- * Handled Events:
- * ─────────────────────────────────────────────────────────────────────────
- * Subscription Events:
- *   - subscription.created       → Set status to 'pending'
- *   - subscription.authenticated → Set status to 'pending' (mandate completed)
- *   - subscription.activated     → Set status to 'active', create payment & order records
- *   - subscription.charged       → Update period dates, create payment & order records
- *   - subscription.pending       → Set status to 'pending' (payment retry in progress)
- *   - subscription.halted        → Set status to 'failed' (all retries exhausted)
- *   - subscription.cancelled     → Set status to 'cancelled', record cancellation date
- *   - subscription.completed     → Set status to 'completed' (all cycles finished)
- *   - subscription.paused        → Set status to 'paused'
- *   - subscription.resumed       → Set status to 'active'
- *   - subscription.updated       → Update subscription details (plan changes, etc)
- *
- * Payment Events:
- *   - payment.captured           → Handle one-time payments, update order status
- *   - payment.failed             → Mark order as cancelled or log failed payment attempt
- *
- * Database Tables Updated:
- * ─────────────────────────────────────────────────────────────────────────
- * subscriptions:
- *   - status                    → pending | active | cancelled | failed | completed | paused
- *   - current_period_start      → unix timestamp → ISO string
- *   - current_period_end        → unix timestamp → ISO string
- *   - cancelled_at              → ISO string when cancelled
- *   - cancel_at_period_end      → boolean flag
- *   - updated_at                → ISO string
- *
- * payments:
- *   - subscription_id           → FK to subscriptions.id
- *   - razorpay_payment_id       → Razorpay payment ID (pay_xxx)
- *   - amount                    → amount in paise
- *   - currency                  → INR
- *   - status                    → captured | failed
- *   - paid_at                   → ISO string
- *
- * orders:
- *   - user_id                   → FK to profiles.id
- *   - plan_id                   → FK to plan.id
- *   - razorpay_subscription_id  → Razorpay subscription ID (sub_xxx)
- *   - razorpay_order_id         → Razorpay payment ID (pay_xxx)
- *   - amount_paise              → amount in paise
- *   - currency                  → INR
- *   - status                    → pending | active | cancelled
- *   - cancellation_reason       → error description on failure
- *   - cancelled_at              → ISO string when cancelled
+ * 
  */
 
 export async function POST(req: NextRequest) {
@@ -78,6 +30,7 @@ export async function POST(req: NextRequest) {
 	try {
 		const body = await req.text()
 		const signature = req.headers.get("x-razorpay-signature") || ""
+
 
 		// ── 2. Verify signature ───────────────────────────────────────────────────
 		const secret = process.env.RAZORPAY_WEBHOOK_SECRET
@@ -87,14 +40,9 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 })
 		}
 
-		const expectedSignature = crypto
-			.createHmac("sha256", secret)
-			.update(body)
-			.digest("hex")
-
-		if (expectedSignature !== signature) {
+		if (!validateWebhookSignature(body, signature, secret)) {
 			console.warn("[webhook] Invalid signature")
-			// return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
+			return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
 		}
 
 		// ── 3. Parse event ────────────────────────────────────────────────────────
@@ -167,6 +115,9 @@ export async function POST(req: NextRequest) {
 					updated_at: new Date().toISOString()
 				})
 
+				// Promote user to pro
+				await updateUserRoleAdmin(userSubscription.data.user_id, 'pro')
+
 				// Create payment record if payment data is available
 				if (payment) {
 					await createPayment({
@@ -225,6 +176,9 @@ export async function POST(req: NextRequest) {
 					updated_at: new Date().toISOString(),
 				})
 
+				// Ensure user stays pro on every renewal
+				await updateUserRoleAdmin(userSubscription.data.user_id, 'pro')
+
 				// Create payment record
 				await createPayment({
 					subscription_id: userSubscription.data.id,
@@ -255,15 +209,36 @@ export async function POST(req: NextRequest) {
 			// Subscription is still alive — do not revoke access yet.
 			case "subscription.pending": {
 				const sub = event.payload.subscription.entity
+				const payment = event.payload.payment?.entity
 				console.log("[webhook] subscription.pending:", {
 					id: sub.id,
 					remaining_count: sub.remaining_count,
+					reason: payment.error_code,
+					desc: payment.error_description
 				})
 
 				await updateSubscriptionByRazorpayId(sub.id, {
 					status: "pending",
 					updated_at: new Date().toISOString(),
 				})
+
+				// Create a failed payment record if payment data is available in payload
+				if (payment) {
+					const userSubscription = await getSubscriptionByRazorpayId(sub.id)
+					if (userSubscription.success && userSubscription.data) {
+						await createPayment({
+							subscription_id: userSubscription.data.id,
+							razorpay_payment_id: payment.id,
+							amount: payment.amount,
+							razorpay_signature: signature,
+							currency: payment.currency || 'INR',
+							status: 'failed',
+							failure_code: payment.error_code,
+							failure_reason: payment.error_description,
+							paid_at: null
+						})
+					}
+				}
 
 				break
 			}
@@ -284,6 +259,12 @@ export async function POST(req: NextRequest) {
 					updated_at: new Date().toISOString(),
 				})
 
+				// Revoke pro access — all retries exhausted
+				const haltedSub = await getSubscriptionByRazorpayId(sub.id)
+				if (haltedSub.success && haltedSub.data) {
+					await updateUserRoleAdmin(haltedSub.data.user_id, 'user')
+				}
+
 				break
 			}
 
@@ -303,6 +284,11 @@ export async function POST(req: NextRequest) {
 					updated_at: new Date().toISOString(),
 				})
 
+				// Revoke pro access
+				const cancelledSub = await getSubscriptionByRazorpayId(sub.id)
+				if (cancelledSub.success && cancelledSub.data) {
+					await updateUserRoleAdmin(cancelledSub.data.user_id, 'user')
+				}
 				break
 			}
 
@@ -321,6 +307,12 @@ export async function POST(req: NextRequest) {
 					updated_at: new Date().toISOString(),
 				})
 
+				// All cycles done — revert to free user
+				const completedSub = await getSubscriptionByRazorpayId(sub.id)
+				if (completedSub.success && completedSub.data) {
+					await updateUserRoleAdmin(completedSub.data.user_id, 'user')
+				}
+
 				break
 			}
 
@@ -338,6 +330,12 @@ export async function POST(req: NextRequest) {
 					updated_at: new Date().toISOString(),
 				})
 
+				// Revoke pro access while paused
+				const pausedSub = await getSubscriptionByRazorpayId(sub.id)
+				if (pausedSub.success && pausedSub.data) {
+					await updateUserRoleAdmin(pausedSub.data.user_id, 'user')
+				}
+
 				break
 			}
 
@@ -354,6 +352,12 @@ export async function POST(req: NextRequest) {
 					status: "active",
 					updated_at: new Date().toISOString(),
 				})
+
+				// Restore pro access on resume
+				const resumedSub = await getSubscriptionByRazorpayId(sub.id)
+				if (resumedSub.success && resumedSub.data) {
+					await updateUserRoleAdmin(resumedSub.data.user_id, 'pro')
+				}
 
 				break
 			}
@@ -391,20 +395,6 @@ export async function POST(req: NextRequest) {
 					currency: payment.currency,
 				})
 
-				// If this is a subscription payment, it's already handled by subscription.charged or subscription.activated
-				// This event is primarily for one-time payments
-				// if (!payment.subscription_id && payment.order_id) {
-				// 	// Handle one-time payment - update order status
-				// 	await supabaseAdmin
-				// 		.from('orders')
-				// 		.update({
-				// 			status: 'active',
-				// 			razorpay_order_id: payment.id,
-				// 			updated_at: new Date().toISOString(),
-				// 		})
-				// 		.eq('razorpay_order_id', payment.order_id)
-				// }
-
 				break
 			}
 
@@ -421,21 +411,7 @@ export async function POST(req: NextRequest) {
 					error_description: payment.error_description,
 				})
 
-				// For one-time payments, mark order as cancelled
-				// if (!payment.subscription_id && payment.order_id) {
-				// 	await supabaseAdmin
-				// 		.from('orders')
-				// 		.update({
-				// 			status: 'cancelled',
-				// 			cancellation_reason: payment.error_description || 'Payment failed',
-				// 			cancelled_at: new Date().toISOString(),
-				// 			updated_at: new Date().toISOString(),
-				// 		})
-				// 		.eq('razorpay_order_id', payment.order_id)
-				// }
-
 				// For subscription payments, the subscription.pending event will handle the subscription status
-				// We can still log the failed payment attempt
 				if (payment.subscription_id) {
 					const userSubscription = await getSubscriptionByRazorpayId(payment.subscription_id)
 					if (userSubscription.success && userSubscription.data) {

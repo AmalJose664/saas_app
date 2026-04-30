@@ -71,7 +71,7 @@ export async function createSubscriptionAction(planId: string): Promise<Subscrib
 		user_id: user.id,
 		plan_id: plan.id,
 		razorpay_subscription_id: rzpSubscription.id,
-		status: 'pending',
+		status: 'created',
 		cancel_at_period_end: false,
 	})
 

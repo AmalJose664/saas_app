@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const STATUS = ['cancelled', 'active', 'pending', 'failed', 'completed'] as const;
+const STATUS = ['cancelled', 'active', 'pending', 'failed', 'completed', 'created'] as const;
 
 export const SubscriptionStatusSchema = z.enum(STATUS);
 

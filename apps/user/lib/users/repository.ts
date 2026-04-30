@@ -1,4 +1,5 @@
 import { createClient } from '@myapp/supabase/server'
+import { supabaseAdmin } from '@myapp/supabase/admin'
 import type { TablesUpdate } from '@repo/database'
 
 /**
@@ -41,4 +42,15 @@ export async function dbGetUsersCount() {
 export async function dbUpdateUser(id: string, data: TablesUpdate<'profiles'>) {
 	const supabase = await createClient()
 	return supabase.from('profiles').update(data).eq('id', id).select().single()
+}
+
+// ─── Admin / service-role ─────────────────────────────────────────────────────
+
+/**
+ * Update a user's profile using the service role key.
+ * Used in webhook handlers where no user session is available.
+ * Bypasses RLS — use only for trusted server-side operations.
+ */
+export async function dbUpdateUserAdmin(id: string, data: TablesUpdate<'profiles'>) {
+	return supabaseAdmin.from('profiles').update(data).eq('id', id).select().single()
 }
