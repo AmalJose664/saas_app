@@ -34,7 +34,7 @@ export default async function DashboardLayout({
 	const pathname = headerList.get('x-pathname')?.toLowerCase();
 	return (
 		<div className="flex h-screen bg-background">
-			<aside className="w-64 bg-slate-900 hidden md:flex flex-col border-r border-slate-800">
+			<aside className="w-64 bg-slate-900 hidden md:flex flex-col border-r border-slate-800 fixed min-h-screen">
 				<div className="p-6 text-gray-100 text-xl font-bold tracking-tight border-b border-slate-800 flex items-center gap-2">
 					<div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-sm">S</div>
 					Admin Portal
@@ -48,7 +48,7 @@ export default async function DashboardLayout({
 				</nav>
 			</aside>
 
-			<div className="flex-1 flex flex-col overflow-hidden">
+			<div className="flex-1 flex flex-col ml-[258px]">
 				<header className="h-16 py-2 bg-white border-b border-gray-200 flex items-center justify-between px-8">
 					<h2 className="text-lg font-medium text-gray-700 capitalize">Dashboard</h2>
 					<Logout />

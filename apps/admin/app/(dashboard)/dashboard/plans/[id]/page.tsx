@@ -21,6 +21,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import DeletePlanButton from '../../../../../components/DeletePlan';
 import { getPlanById } from '../../../../../lib/plans/service';
+import { ArrowLeft, Calendar, Pen, SquareKanban } from 'lucide-react';
 
 /**
  * PlanDetailPage — server component that fetches one plan by ID.
@@ -56,64 +57,81 @@ export default async function PlanDetailPage({
 	// ─── Render ──────────────────────────────────────────────────
 	return (
 		<div className="min-h-screen bg-slate-50 p-8">
-			<div className="max-w-5xl mx-auto">
+			<div className="max-w-4xl mx-auto">
 				{/* Header */}
 				<div className="flex justify-between items-center mb-8">
-					<div>
-						<h1 className="text-3xl font-bold text-slate-900">Subscription Plans</h1>
-						<p className="text-slate-500">Manage pricing tiers</p>
+					<div className="flex items-center space-x-4">
+						<Link href="/dashboard/plans" className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition text-slate-500 shadow-sm">
+							<ArrowLeft />
+						</Link>
+						<div>
+							<h1 className="text-3xl font-bold text-slate-900">Plan Details</h1>
+							<p className="text-slate-500">View and manage subscription tier</p>
+						</div>
 					</div>
 					<Link
 						href="/dashboard/plans/add"
-						className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm"
+						className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition shadow-md"
 					>
 						+ Create Another Plan
 					</Link>
 				</div>
 
-				{/* Single plan detail table */}
-				<div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-					<table className="w-full text-left border-collapse">
-						<thead>
-							<tr className="bg-slate-50 border-b border-slate-200">
-								<th className="p-4 text-sm font-semibold text-slate-600">Plan Name</th>
-								<th className="p-4 text-sm font-semibold text-slate-600">Price</th>
-								<th className="p-4 text-sm font-semibold text-slate-600">Interval</th>
-								<th className="p-4 text-sm font-semibold text-slate-600">Status</th>
-								<th className="p-4 text-sm font-semibold text-slate-600 text-right">Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr className="border-t border-slate-100 hover:bg-slate-50 transition">
-								<td className="p-4">
-									<div className="font-medium text-slate-900">{plan.name}</div>
-									<div className="text-xs text-slate-400 font-mono">{plan.razorpay_plan_id || '---'}</div>
-								</td>
-								<td className="p-4 text-slate-700">₹{plan.amount / 100}</td>
-								<td className="p-4 text-slate-700 capitalize">{plan.interval}</td>
-								<td className="p-4">
-									<span
-										className={`px-2 py-1 rounded-full text-xs font-medium ${
-											plan.is_active
-												? 'bg-green-100 text-green-700'
-												: 'bg-slate-100 text-slate-600'
+				{/* Plan Detail Card */}
+				<div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden flex flex-col md:flex-row">
+
+					<div className="p-8 md:p-10 md:w-2/3 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center relative">
+						<div className="absolute top-0 right-0 p-8 opacity-5">
+							<SquareKanban size={200} />
+						</div>
+
+						<div className="relative z-10">
+							<div className="flex items-center space-x-3 mb-6">
+								<span
+									className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase shadow-sm ${plan.is_active
+										? 'bg-green-100 text-green-700 border border-green-200'
+										: 'bg-slate-100 text-slate-600 border border-slate-200'
 										}`}
-									>
-										{plan.is_active ? 'Active' : 'Inactive'}
-									</span>
-								</td>
-								<td className="p-4 text-right space-x-4">
-									<Link
-										href={`/dashboard/plans/edit/${plan.id}`}
-										className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-									>
-										Edit
-									</Link>
+								>
+									{plan.is_active ? 'Active Plan' : 'Inactive'}
+								</span>
+								<span className="text-xs text-slate-500 font-mono bg-slate-50 border border-slate-200 px-2 py-1 rounded-md shadow-sm">
+									ID: {plan.razorpay_plan_id || 'Not synced'}
+								</span>
+							</div>
+
+							<h2 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">{plan.name}</h2>
+
+							<div className="flex items-baseline space-x-2 mt-6">
+								<span className="text-5xl font-black text-slate-900 tracking-tighter">₹{plan.amount / 100}</span>
+								<span className="text-xl text-slate-500 font-medium lowercase">/ {plan.interval}</span>
+							</div>
+
+							<div className="mt-10 pt-6 border-t border-slate-100 text-slate-500 flex items-center space-x-2">
+								<Calendar />
+								<span className="text-sm font-medium">Created on {new Date(plan.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+							</div>
+						</div>
+					</div>
+
+					{/* Right Section: Actions */}
+					<div className="p-8 md:p-10 md:w-1/3 bg-slate-50/80 flex flex-col justify-center">
+						<h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 text-center md:text-left">Quick Actions</h3>
+						<div className="space-y-4">
+							<Link
+								href={`/dashboard/plans/edit/${plan.id}`}
+								className="w-full flex justify-center items-center px-4 py-3.5 bg-white border border-slate-200 text-slate-700 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md rounded-xl font-semibold transition-all shadow-sm"
+							>
+								<Pen size={16} className='mr-4' />
+								Edit Plan
+							</Link>
+							<div className="w-full flex justify-center items-center bg-white border border-red-100 rounded-xl shadow-sm overflow-hidden hover:border-red-300 hover:shadow-md transition-all group">
+								<div className="w-full [&>button]:w-full [&>button]:py-3.5 [&>button]:rounded-none [&>button]:font-semibold group-hover:[&>button]:bg-red-50">
 									<DeletePlanButton planId={plan.id} />
-								</td>
-							</tr>
-						</tbody>
-					</table>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

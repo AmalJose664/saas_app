@@ -14,7 +14,7 @@
  */
 
 import type { Metadata } from 'next';
-import '@repo/tailwind-config/globals.css';
+import '@repo/ui/globals.css'
 
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';

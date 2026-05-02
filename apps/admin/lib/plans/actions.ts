@@ -26,9 +26,9 @@ export async function createPlanAction(_prev: ActionResult, formData: FormData):
 		amount: parseFloat(formData.get('amount') as string),
 		interval: formData.get('interval') as string,
 		razorpay_plan_id: (formData.get('razorpay_plan_id') as string) || null,
-		is_active: formData.get('is_active') === 'true',
+		is_active: formData.get('is_active') === 'true' || formData.get('is_active') === 'on',
+		features: formData.getAll('features[]')
 	}
-
 	const parsed = createPlanSchema.safeParse(raw)
 	if (!parsed.success) {
 		const fieldErrors: Record<string, string> = {}
@@ -54,9 +54,10 @@ export async function updatePlanAction(_prev: ActionResult, formData: FormData):
 		amount: parseFloat(formData.get('amount') as string),
 		interval: formData.get('interval') as string,
 		razorpay_plan_id: (formData.get('razorpay_plan_id') as string) || null,
-		is_active: formData.get('is_active') === 'true',
+		is_active: formData.get('is_active') === 'true' || formData.get('is_active') === 'on',
+		features: formData.getAll('features[]')
 	}
-
+	console.log(formData.get('is_active'), "is active", formData.get('is_active') === 'true')
 	const parsed = updatePlanSchema.safeParse(raw)
 	if (!parsed.success) {
 		const fieldErrors: Record<string, string> = {}

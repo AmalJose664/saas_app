@@ -26,6 +26,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useUpdatePlan, PlanActionError } from '../../../../../../lib/plans/hooks';
+import { useState } from 'react'
+import { CircleMinus, Plus } from 'lucide-react';
 
 /** Shape of the pre-populated default values passed from the server */
 interface DefaultValues {
@@ -39,6 +41,7 @@ interface DefaultValues {
 	razorpay_plan_id: string;
 	/** Whether the plan is visible to customers */
 	is_active: boolean;
+	features: string[] | null
 }
 
 /** Props passed from the EditPlanPage server component */
@@ -58,6 +61,7 @@ interface EditPlanFormProps {
 export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
 	const router = useRouter();
 	const { mutate, isPending, error } = useUpdatePlan();
+	const [features, setFeatures] = useState(defaultValues.features || [])
 
 	const fieldErrors = error instanceof PlanActionError ? (error.fieldErrors ?? {}) : {};
 	const globalError = error && !(error instanceof PlanActionError && error.fieldErrors)
@@ -150,18 +154,41 @@ export default function EditPlanForm({ id, defaultValues }: EditPlanFormProps) {
 						</div>
 
 						<div className="flex items-center gap-3">
-							<input type="hidden" name="is_active" value="false" />
 							<input
 								type="checkbox"
 								id="is_active"
 								name="is_active"
-								value="true"
 								defaultChecked={defaultValues.is_active}
 								className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
 							/>
 							<label htmlFor="is_active" className="text-sm font-medium text-slate-700">
 								Set as Active (Visible to users)
 							</label>
+						</div>
+						<div>
+							<div className='flex items-center justify-between pb-2'>
+								<label className="block text-sm font-medium text-slate-700 mb-1">Features (Optional)</label>
+								<button className='flex border w-fit rounded-md py-2 px-3 shadow-md items-center gap-4' type='button' onClick={() => setFeatures(prev => [...prev, ""])}>
+									<span className='text-xs'>Add Features</span>
+									<Plus size={16} />
+								</button>
+							</div>
+							<div className='mt-4'>
+								{features?.map((f, i) => (
+									<div key={i} className='flex items-center justify-between gap-4 mb-2'>
+										<input
+											name="features[]"
+											type="text"
+											defaultValue={f}
+											className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+										/>
+										<button className='border w-fit rounded-md py-2 px-3 shadow-md' type='button'
+											onClick={() => setFeatures(prev => prev.filter((str, indx) => indx !== i))}>
+											<CircleMinus size={16} />
+										</button>
+									</div>
+								))}
+							</div>
 						</div>
 
 						<hr className="border-slate-100" />

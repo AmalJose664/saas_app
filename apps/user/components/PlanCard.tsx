@@ -91,7 +91,7 @@ const PlanCard = ({ plan, isCurrent, mode = 'subscribe', currentSubscriptionId }
 			</div>
 
 			<ul className="space-y-4 mb-8 flex-grow text-gray-600">
-				{true && ["6", "4", " 3"].map((f, i) => (
+				{plan.features?.map((f, i) => (
 					<li key={i} className="flex items-center gap-2">
 						<Check size={18} className='text-green-400' />
 						{f}

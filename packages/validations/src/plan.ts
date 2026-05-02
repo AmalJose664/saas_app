@@ -35,6 +35,7 @@ export const planSchema = z.object({
 		.optional(),
 
 	is_active: z.boolean().default(true),
+	features: z.string().array().optional()
 })
 
 export const createPlanSchema = planSchema
