@@ -1,4 +1,4 @@
-import type { Tables, TablesUpdate } from '@repo/database'
+import type { Tables, TablesUpdate } from '@workspace/database'
 import {
 	dbGetOrderById,
 	dbGetOrderByRazorpayOrderId,

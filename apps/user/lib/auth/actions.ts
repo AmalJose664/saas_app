@@ -1,8 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@myapp/supabase/server'
-import { loginSchema, signupSchema } from '@repo/validations'
+import { createClient } from '@workspace/supabase/server'
+import { loginSchema, signupSchema } from '@workspace/validations'
 
 /**
  * Auth Server Actions

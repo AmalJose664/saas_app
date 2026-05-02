@@ -12,7 +12,7 @@
 
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@myapp/supabase'
+import { createClient } from '@workspace/supabase'
 import { signupAction } from '../../../lib/auth/actions'
 import type { AuthResult } from '../../../lib/auth/actions'
 import { Eye, EyeOff } from 'lucide-react'

@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '@myapp/supabase/admin'
-import type { TablesInsert, TablesUpdate } from '@repo/database'
+import { supabaseAdmin } from '@workspace/supabase/admin'
+import type { TablesInsert, TablesUpdate } from '@workspace/database'
 
 /**
  * Orders Repository

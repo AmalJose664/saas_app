@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
-	transpilePackages: ["@repo/ui", "@repo/database", "@repo/validation"],
+	transpilePackages: ["@workspace/ui", "@workspace/database", "@workspace/validation"],
 	images: {
 		remotePatterns: [
 			{ protocol: 'https', hostname: '**.supabase.co' },

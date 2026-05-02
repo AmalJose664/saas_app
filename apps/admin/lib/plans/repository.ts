@@ -1,5 +1,5 @@
-import { createClient } from '@myapp/supabase/server'
-import type { TablesInsert, TablesUpdate } from '@repo/database'
+import { createClient } from '@workspace/supabase/server'
+import type { TablesInsert, TablesUpdate } from '@workspace/database'
 
 /**
  * Plans Repository

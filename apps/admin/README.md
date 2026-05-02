@@ -31,9 +31,10 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ## Latest Updates (April 2026)
 
 ### Critical Fixes
+
 - **Login page:** Password visibility toggle (eye icon), loading spinner, error banners, removed all `console.log`
 - **ToggleUserActive.tsx:** Fixed dead `return null` bug — button now renders correctly
-- **next.config.js:** Fixed typo `@repo/validation` → `@repo/validations`, converted to ES module syntax for Next.js 16
+- **next.config.js:** Fixed typo `@workspace/validation` → `@workspace/validations`, converted to ES module syntax for Next.js 16
 - **not-authorized page:** Professional styled page with lock icon and navigation links
 - **plans/[id]:** Refactored from raw Supabase queries to service layer (`getPlanById`)
 - **NavCard.tsx:** Replaced `any` with proper `NavCardProps` TypeScript interface
@@ -41,20 +42,22 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 - **Build fixes:** Fixed Zod validation syntax for newer version, fixed `JSX.Element` namespace error
 
 ### TanStack Query Integration
+
 - **Installed `@tanstack/react-query` + `@tanstack/react-query-devtools`**
 - **Created `lib/query-client.ts`** — singleton QueryClient with 30s stale time, 5min GC, 3x retry, refetch on focus
 - **Created domain-specific hooks** in `lib/{users,plans,orders,subscriptions}/hooks.ts`:
-  - `useUsers` — paginated with placeholder data (smooth pagination)
-  - `useUser` — individual profile with background refresh
-  - `useToggleUserActive` — mutation with automatic cache invalidation
-  - `usePlans` / `usePlan` — cached plan list + detail
-  - `useCreatePlan` / `useUpdatePlan` / `useDeletePlan` — mutations with list invalidation
-  - `useOrders` / `useSubscriptions` — domain-specific queries
+    - `useUsers` — paginated with placeholder data (smooth pagination)
+    - `useUser` — individual profile with background refresh
+    - `useToggleUserActive` — mutation with automatic cache invalidation
+    - `usePlans` / `usePlan` — cached plan list + detail
+    - `useCreatePlan` / `useUpdatePlan` / `useDeletePlan` — mutations with list invalidation
+    - `useOrders` / `useSubscriptions` — domain-specific queries
 - **Updated components** to use hooks: `ToggleUserActive.tsx`, `DeletePlan.tsx`
 - **Wrapped app** in `QueryProvider` (layout.tsx) for React Query context
 - **Query key factories** per domain for consistent cache management
 
 ### Documentation
+
 - Added comprehensive JSDoc to all pages, components, middleware, and service files
 - Each file includes ASCII architecture flow diagrams showing the call chain
 - Inline section comments (`// ─── Section ───`) for visual grouping
@@ -63,20 +66,20 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 
 ## Routes
 
-| Route | Description | Type |
-|-------|-------------|------|
-| `/` | Landing page with nav cards (redirects to `/dashboard` if logged in) | Server |
-| `/login` | Admin login with password visibility toggle | Client |
-| `/not-authorized` | Access denied page with helpful messaging | Server |
-| `/dashboard` | Overview — stat cards + recent orders | Server |
-| `/dashboard/users` | Paginated user list with email search | Server + Client |
-| `/dashboard/orders` | All orders with customer info | Server |
-| `/dashboard/subscriptions` | All subscriptions with plan details | Server |
-| `/dashboard/users/[id]` | Individual user profile — subscription, orders, toggle active | Server |
-| `/dashboard/plans` | All subscription plans (grid layout) | Server |
-| `/dashboard/plans/add` | Create a new plan (form) | Client |
-| `/dashboard/plans/edit/[id]` | Edit an existing plan | Server + Client |
-| `/dashboard/plans/[id]` | View single plan details | Server |
+| Route                        | Description                                                          | Type            |
+| ---------------------------- | -------------------------------------------------------------------- | --------------- |
+| `/`                          | Landing page with nav cards (redirects to `/dashboard` if logged in) | Server          |
+| `/login`                     | Admin login with password visibility toggle                          | Client          |
+| `/not-authorized`            | Access denied page with helpful messaging                            | Server          |
+| `/dashboard`                 | Overview — stat cards + recent orders                                | Server          |
+| `/dashboard/users`           | Paginated user list with email search                                | Server + Client |
+| `/dashboard/orders`          | All orders with customer info                                        | Server          |
+| `/dashboard/subscriptions`   | All subscriptions with plan details                                  | Server          |
+| `/dashboard/users/[id]`      | Individual user profile — subscription, orders, toggle active        | Server          |
+| `/dashboard/plans`           | All subscription plans (grid layout)                                 | Server          |
+| `/dashboard/plans/add`       | Create a new plan (form)                                             | Client          |
+| `/dashboard/plans/edit/[id]` | Edit an existing plan                                                | Server + Client |
+| `/dashboard/plans/[id]`      | View single plan details                                             | Server          |
 
 ---
 
@@ -126,14 +129,14 @@ lib/
 
 ### Client vs Server Components
 
-| Layer | Where | Role |
-|-------|-------|------|
-| `middleware.ts` | Edge | Auth + role check before any page loads |
-| Server Component | `page.tsx` | Fetch data, pass to children |
-| Client Component | `*Table.tsx` | Interactive UI (search, pagination, forms) |
-| Server Action | `actions.ts` | `'use server'` — mutations, validation |
-| Service | `service.ts` | Business logic, error wrapping |
-| Repository | `repository.ts` | Raw Supabase, no logic |
+| Layer            | Where           | Role                                       |
+| ---------------- | --------------- | ------------------------------------------ |
+| `middleware.ts`  | Edge            | Auth + role check before any page loads    |
+| Server Component | `page.tsx`      | Fetch data, pass to children               |
+| Client Component | `*Table.tsx`    | Interactive UI (search, pagination, forms) |
+| Server Action    | `actions.ts`    | `'use server'` — mutations, validation     |
+| Service          | `service.ts`    | Business logic, error wrapping             |
+| Repository       | `repository.ts` | Raw Supabase, no logic                     |
 
 ---
 
@@ -143,13 +146,13 @@ On top of the Server Component / Server Action architecture, **TanStack Query** 
 
 ### Why TanStack Query?
 
-| Feature | Without React Query | With React Query |
-|---------|--------------------|------------------|
-| **Live dashboard** | Manual `setInterval` + fetch | `refetchInterval` with stale-while-revalidate |
+| Feature                   | Without React Query               | With React Query                                  |
+| ------------------------- | --------------------------------- | ------------------------------------------------- |
+| **Live dashboard**        | Manual `setInterval` + fetch      | `refetchInterval` with stale-while-revalidate     |
 | **Mutation → UI refresh** | `router.refresh()` or full reload | Automatic cache invalidation + background refetch |
-| **Multiple tabs** | Stale data across tabs | `refetchOnWindowFocus` keeps all tabs in sync |
-| **Offline resilience** | Failed mutations lost | Automatic retry with exponential backoff |
-| **Pagination/search** | Lift state to URL, full reload | Client-side cache, instant UI |
+| **Multiple tabs**         | Stale data across tabs            | `refetchOnWindowFocus` keeps all tabs in sync     |
+| **Offline resilience**    | Failed mutations lost             | Automatic retry with exponential backoff          |
+| **Pagination/search**     | Lift state to URL, full reload    | Client-side cache, instant UI                     |
 
 ### Where We Use It
 
@@ -169,13 +172,13 @@ Client Component (e.g. ToggleUserActive, DeletePlan)
 
 Every domain has a centralized key factory in its `hooks.ts`:
 
-| Domain | Key Pattern | Example |
-|--------|-------------|---------|
-| Dashboard | `['dashboard', 'stats']` | `queryKey: ['dashboard', 'stats']` |
-| Users | `['users', 'list', search, page]` | `queryKey: usersKeys.list('admin', 1)` |
-| Plans | `['plans', 'list']` | `queryKey: plansKeys.list()` |
-| Orders | `['orders', 'byUser', userId]` | `queryKey: ordersKeys.byUser(id)` |
-| Subscriptions | `['subscriptions', 'list']` | `queryKey: subscriptionsKeys.list()` |
+| Domain        | Key Pattern                       | Example                                |
+| ------------- | --------------------------------- | -------------------------------------- |
+| Dashboard     | `['dashboard', 'stats']`          | `queryKey: ['dashboard', 'stats']`     |
+| Users         | `['users', 'list', search, page]` | `queryKey: usersKeys.list('admin', 1)` |
+| Plans         | `['plans', 'list']`               | `queryKey: plansKeys.list()`           |
+| Orders        | `['orders', 'byUser', userId]`    | `queryKey: ordersKeys.byUser(id)`      |
+| Subscriptions | `['subscriptions', 'list']`       | `queryKey: subscriptionsKeys.list()`   |
 
 **Invalidation pattern:** After a mutation (e.g. `toggleUserActive`), the hook calls `queryClient.invalidateQueries({ queryKey: usersKeys.all })` to refresh all dependent UI automatically.
 
@@ -211,17 +214,17 @@ Request → middleware.ts
 
 ## Key Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `next` | Framework (v16.2.0 with Turbopack) |
-| `@myapp/supabase` | Supabase server/browser clients |
-| `@repo/database` | Generated Supabase DB types (TablesInsert, TablesUpdate) |
-| `@repo/validations` | Zod schemas for forms (plans, profiles) |
-| `@repo/ui` | Shared components (ConfirmModal, Logout) |
-| `@tanstack/react-query` | TanStack Query for client-side data fetching, caching, and mutations |
-| `@tanstack/react-query-devtools` | React Query Devtools for debugging cache state |
-| `jwt-decode` | Reading `user_role` from JWT in middleware |
-| `sonner` | Toast notifications |
+| Package                          | Purpose                                                              |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `next`                           | Framework (v16.2.0 with Turbopack)                                   |
+| `@workspace/supabase`            | Supabase server/browser clients                                      |
+| `@workspace/database`            | Generated Supabase DB types (TablesInsert, TablesUpdate)             |
+| `@workspace/validations`         | Zod schemas for forms (plans, profiles)                              |
+| `@workspace/ui`                  | Shared components (ConfirmModal, Logout)                             |
+| `@tanstack/react-query`          | TanStack Query for client-side data fetching, caching, and mutations |
+| `@tanstack/react-query-devtools` | React Query Devtools for debugging cache state                       |
+| `jwt-decode`                     | Reading `user_role` from JWT in middleware                           |
+| `sonner`                         | Toast notifications                                                  |
 
 ---
 

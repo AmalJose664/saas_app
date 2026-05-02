@@ -1,6 +1,6 @@
 'use server'
 
-import { getRazorpay } from '@myapp/razorpay'
+import { getRazorpay } from '@workspace/razorpay'
 import { getPlanById } from '../plans/service'
 import { createNewSubscription, getCurrentSubscription, getSubscriptionById, updateSubscriptionByIdAdmin } from './service'
 import { getAuthUser } from '../auth/server'

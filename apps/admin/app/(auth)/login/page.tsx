@@ -11,7 +11,7 @@
  * └──────┬──────┘
  *        │ calls
  * ┌──────▼──────┐
- * │  Supabase   │  (Auth + DB via @myapp/supabase)
+ * │  Supabase   │  (Auth + DB via @workspace/supabase)
  * │   Client    │
  * └──────┬──────┘
  *        │ on success
@@ -25,7 +25,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@myapp/supabase';
+import { createClient } from '@workspace/supabase';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 

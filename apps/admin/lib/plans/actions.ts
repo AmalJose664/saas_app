@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createPlanSchema, updatePlanSchema } from '@repo/validations'
+import { createPlanSchema, updatePlanSchema } from '@workspace/validations'
 import { createPlan, updatePlan, deletePlan } from './service'
 
 /**

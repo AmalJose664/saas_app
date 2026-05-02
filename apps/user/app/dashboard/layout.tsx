@@ -11,12 +11,12 @@
  *   └── {children}: matched page (e.g. dashboard/page.tsx)
  *
  * The avatar is sourced from user_metadata.avatar_url (set by Google OAuth).
- * The Logout button is a shared Client Component from @repo/ui.
+ * The Logout button is a shared Client Component from @workspace/ui.
  *
  * @param children - the page content rendered by the matched route
  */
 import { getAuthUser } from "../../lib/auth/server"
-import Logout from "@repo/ui/Logout"
+import Logout from "@workspace/ui/Logout"
 import Link from "next/link";
 
 export default async function DashboardLayout({

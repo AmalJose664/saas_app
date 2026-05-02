@@ -30,14 +30,14 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 
 ## Routes
 
-| Route | Description |
-|-------|-------------|
-| `/` | Landing page |
-| `/login` | Google OAuth sign-in |
-| `/auth/callback` | OAuth redirect handler — exchanges code for session |
-| `/dashboard` | Plan selection — lists all active plans with pricing |
-| `/profile` | View profile — name, avatar, email, member since |
-| `/profile/edit` | Edit profile — update full name and avatar URL |
+| Route            | Description                                          |
+| ---------------- | ---------------------------------------------------- |
+| `/`              | Landing page                                         |
+| `/login`         | Google OAuth sign-in                                 |
+| `/auth/callback` | OAuth redirect handler — exchanges code for session  |
+| `/dashboard`     | Plan selection — lists all active plans with pricing |
+| `/profile`       | View profile — name, avatar, email, member since     |
+| `/profile/edit`  | Edit profile — update full name and avatar URL       |
 
 ---
 
@@ -58,16 +58,16 @@ The profile edit flow uses a server/client split:
 
 - `profile/edit/page.tsx` — server component, fetches current profile data
 - `profile/edit/EditProfileForm.tsx` — client component, handles form state and live avatar preview
-- `profile/edit/actions.ts` — server action, validates with `updateProfileSchema` from `@repo/validations`, then upserts to Supabase
+- `profile/edit/actions.ts` — server action, validates with `updateProfileSchema` from `@workspace/validations`, then upserts to Supabase
 
 ---
 
 ## Key Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `next` | Framework |
-| `@myapp/supabase` | Supabase server/browser clients |
-| `@repo/validations` | Zod schema for profile updates |
-| `@repo/ui` | Shared UI components |
-| `tailwindcss` | Styling |
+| Package                  | Purpose                         |
+| ------------------------ | ------------------------------- |
+| `next`                   | Framework                       |
+| `@workspace/supabase`    | Supabase server/browser clients |
+| `@workspace/validations` | Zod schema for profile updates  |
+| `@workspace/ui`          | Shared UI components            |
+| `tailwindcss`            | Styling                         |

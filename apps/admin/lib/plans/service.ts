@@ -5,9 +5,9 @@ import {
 	dbUpdatePlan,
 	dbDeletePlan,
 } from './repository'
-import type { CreatePlanInput, UpdatePlanInput } from '@repo/validations'
-import type { Tables } from '@repo/database'
-import { getRazorpay } from '@myapp/razorpay'
+import type { CreatePlanInput, UpdatePlanInput } from '@workspace/validations'
+import type { Tables } from '@workspace/database'
+import { getRazorpay } from '@workspace/razorpay'
 
 /**
  * Plans Service

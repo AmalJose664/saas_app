@@ -1,6 +1,6 @@
-import { supabaseAdmin } from '@myapp/supabase/admin'
-import { createClient } from '@myapp/supabase/server'
-import type { TablesInsert } from '@repo/database'
+import { supabaseAdmin } from '@workspace/supabase/admin'
+import { createClient } from '@workspace/supabase/server'
+import type { TablesInsert } from '@workspace/database'
 
 /**
  * Payments Repository

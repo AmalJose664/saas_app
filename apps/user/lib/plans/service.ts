@@ -1,5 +1,5 @@
 import { dbGetAllPlans, dbGetPlanById } from './repository'
-import type { Tables } from '@repo/database'
+import type { Tables } from '@workspace/database'
 
 /**
  * Plans Service (user app)

@@ -1,27 +1,29 @@
-# @myapp/supabase
+# @workspace/supabase
 
 Supabase client factory for both server and browser environments.
 
 ## Exports
 
-| Import path | Use in |
-|-------------|--------|
-| `@myapp/supabase/server` | Server Components, Server Actions, Route Handlers |
-| `@myapp/supabase/client` | `'use client'` components |
+| Import path                  | Use in                                            |
+| ---------------------------- | ------------------------------------------------- |
+| `@workspace/supabase/server` | Server Components, Server Actions, Route Handlers |
+| `@workspace/supabase/client` | `'use client'` components                         |
 
 ## Usage
 
 **Server (default for most cases):**
+
 ```ts
-import { createClient } from '@myapp/supabase/server'
+import { createClient } from "@workspace/supabase/server"
 
 const supabase = await createClient()
-const { data } = await supabase.from('profiles').select('*')
+const { data } = await supabase.from("profiles").select("*")
 ```
 
 **Browser (only when needed client-side):**
+
 ```ts
-import { createClient } from '@myapp/supabase/client'
+import { createClient } from "@workspace/supabase/client"
 
 const supabase = createClient()
 ```

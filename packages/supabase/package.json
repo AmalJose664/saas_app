@@ -1,5 +1,5 @@
 {
-	"name": "@myapp/supabase",
+	"name": "@workspace/supabase",
 	"version": "0.0.1",
 	"main": "./index.ts",
 	"exports": {

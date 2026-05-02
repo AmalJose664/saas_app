@@ -5,7 +5,7 @@
  * Architecture Flow:
  * UI (DeletePlanButton)
  *   ↓ onClick
- * ConfirmationModal (@repo/ui/ConfirmModel)
+ * ConfirmationModal (@workspace/ui/ConfirmModel)
  *   ↓ onConfirm
  * TanStack Query Hook (lib/plans/hooks.ts::useDeletePlan)
  *   ↓ calls
@@ -29,7 +29,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import ConfirmationModal from '@repo/ui/ConfirmModel';
+import ConfirmationModal from '@workspace/ui/ConfirmModel';
 import { useDeletePlan } from '../lib/plans/hooks';
 
 /** Props for the DeletePlanButton component */

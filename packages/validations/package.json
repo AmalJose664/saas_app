@@ -1,5 +1,5 @@
 {
-	"name": "@repo/validations",
+	"name": "@workspace/validations",
 	"version": "0.0.0",
 	"private": true,
 	"main": "./index.ts",

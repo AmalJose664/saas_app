@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { updateProfileSchema } from '@repo/validations'
+import { updateProfileSchema } from '@workspace/validations'
 import { updateUser } from './service'
 
 export interface UpdateProfileInput {

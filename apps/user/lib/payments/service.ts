@@ -1,4 +1,4 @@
-import type { Tables, TablesInsert } from '@repo/database'
+import type { Tables, TablesInsert } from '@workspace/database'
 import {
 	dbGetPaymentById,
 	dbGetPaymentByRazorpayId,

@@ -1,5 +1,5 @@
-import type { Tables, TablesUpdate } from '@repo/database'
-import type { CreateSubscriptionInput } from '@repo/validations'
+import type { Tables, TablesUpdate } from '@workspace/database'
+import type { CreateSubscriptionInput } from '@workspace/validations'
 import {
 	dbGetSubscriptionById,
 	dbGetSubscriptionsByUserId,

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { cancelSubscription } from "../lib/subscriptions/actions"
 import { useRouter } from "next/navigation"
-import ConfirmationModal from "@repo/ui/ConfirmModel"
+import ConfirmationModal from "@workspace/ui/ConfirmModel"
 import { createPortal } from "react-dom"
 
 

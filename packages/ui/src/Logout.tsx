@@ -1,5 +1,5 @@
 "use client"
-import { createClient } from '@myapp/supabase/client'
+import { createClient } from '@workspace/supabase/client'
 import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 const Logout = () => {

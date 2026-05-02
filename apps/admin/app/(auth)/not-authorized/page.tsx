@@ -7,7 +7,7 @@
  * `user_role` claim is not `'admin'`, the user is redirected here.
  */
 
-import Logout from '@repo/ui/Logout';
+import Logout from '@workspace/ui/Logout';
 import { Lock } from 'lucide-react';
 
 /**

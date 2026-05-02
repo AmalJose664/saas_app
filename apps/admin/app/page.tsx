@@ -9,7 +9,7 @@
  * Architecture:
  * Server Component (this)
  *   ↓ checks
- * Supabase Server Client (@myapp/supabase/server)
+ * Supabase Server Client (@workspace/supabase/server)
  *   ↓ if session exists
  * Next.js redirect() → /dashboard
  *   ↓ if no session
@@ -18,7 +18,7 @@
 
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@myapp/supabase/server';
+import { createClient } from '@workspace/supabase/server';
 import NavCard from '../components/NavCard';
 
 /**

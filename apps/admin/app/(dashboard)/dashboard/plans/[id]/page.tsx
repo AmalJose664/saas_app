@@ -10,7 +10,7 @@
  *   ↓ calls
  * Repository (lib/plans/repository.ts::dbGetPlanById)
  *   ↓ calls
- * Supabase Server Client (@myapp/supabase/server)
+ * Supabase Server Client (@workspace/supabase/server)
  *
  * Previously this page queried Supabase directly (bypassing the service layer).
  * That violated the architecture and duplicated logic. It now goes through

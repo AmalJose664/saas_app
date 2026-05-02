@@ -11,11 +11,11 @@
 		"check-types": "next typegen && tsc --noEmit"
 	},
 	"dependencies": {
-		"@myapp/razorpay": "*",
-		"@myapp/supabase": "*",
-		"@repo/tailwind-config": "*",
-		"@repo/ui": "*",
-		"@repo/validations": "*",
+		"@workspace/razorpay": "*",
+		"@workspace/supabase": "*",
+		"@workspace/tailwind-config": "*",
+		"@workspace/ui": "*",
+		"@workspace/validations": "*",
 		"@supabase/ssr": "^0.10.2",
 		"@supabase/supabase-js": "^2.104.0",
 		"@tailwindcss/postcss": "^4.2.4",
@@ -29,8 +29,8 @@
 		"react-dom": "^19.2.0"
 	},
 	"devDependencies": {
-		"@repo/eslint-config": "*",
-		"@repo/typescript-config": "*",
+		"@workspace/eslint-config": "*",
+		"@workspace/typescript-config": "*",
 		"@types/node": "^22.15.3",
 		"@types/react": "19.2.2",
 		"@types/react-dom": "19.2.2",

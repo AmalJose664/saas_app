@@ -1,23 +1,23 @@
-# @repo/database
+# @workspace/database
 
 Auto-generated TypeScript types from the Supabase database schema.
 
 ## Usage
 
 ```ts
-import type { Tables, TablesInsert, TablesUpdate, Enums } from '@repo/database'
+import type { Tables, TablesInsert, TablesUpdate, Enums } from "@workspace/database"
 
 // Row type — what a SELECT returns
-type Plan = Tables<'plan'>
+type Plan = Tables<"plan">
 
 // Insert payload
-type NewPlan = TablesInsert<'plan'>
+type NewPlan = TablesInsert<"plan">
 
 // Partial update payload
-type PlanUpdate = TablesUpdate<'plan'>
+type PlanUpdate = TablesUpdate<"plan">
 
 // Enum values
-type OrderStatus = Enums<'order_status'> // 'pending' | 'active' | 'cancelled'
+type OrderStatus = Enums<"order_status"> // 'pending' | 'active' | 'cancelled'
 ```
 
 ## Regenerating types

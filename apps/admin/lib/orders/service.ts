@@ -1,5 +1,5 @@
 import { dbGetOrders, dbGetOrdersCount, dbGetOrdersRevenue } from './repository'
-import type { Tables } from '@repo/database'
+import type { Tables } from '@workspace/database'
 
 /**
  * Orders Service

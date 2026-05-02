@@ -1,5 +1,5 @@
 import { dbGetSubscriptions, dbGetSubscriptionByUserId } from './repository'
-import type { Tables } from '@repo/database'
+import type { Tables } from '@workspace/database'
 
 /**
  * Subscriptions Service

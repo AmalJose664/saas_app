@@ -13,7 +13,7 @@
  *   ↓ calls
  * Repository (lib/users/repository.ts::dbUpdateUser)
  *   ↓ calls
- * Supabase (@myapp/supabase/server)
+ * Supabase (@workspace/supabase/server)
  *
  * Cache invalidation: On success, the hook automatically invalidates
  * the user detail + users list caches, so data refreshes without

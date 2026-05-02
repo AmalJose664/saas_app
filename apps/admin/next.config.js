@@ -10,7 +10,7 @@ const nextConfig = {
 	turbopack: {
 		root: path.resolve(process.cwd(), '..', '..'),
 	},
-	transpilePackages: ["@repo/ui", "@repo/database", "@repo/validations"],
+	transpilePackages: ["@workspace/ui", "@workspace/database", "@workspace/validations"],
 	images: {
 		remotePatterns: [
 			{ protocol: 'https', hostname: '**.supabase.co' },

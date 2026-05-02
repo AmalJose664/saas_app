@@ -1,5 +1,5 @@
 {
-	"name": "@myapp/razorpay",
+	"name": "@workspace/razorpay",
 	"version": "0.0.1",
 	"main": "./index.ts",
 	"exports": {

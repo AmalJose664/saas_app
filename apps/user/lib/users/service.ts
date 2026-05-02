@@ -5,7 +5,7 @@ import {
 	dbUpdateUser,
 	dbUpdateUserAdmin,
 } from './repository'
-import type { TablesUpdate, Tables } from '@repo/database'
+import type { TablesUpdate, Tables } from '@workspace/database'
 
 /**
  * Users Service
