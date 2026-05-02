@@ -18,7 +18,6 @@
  * The tab query param (?tab=users) is preserved for future use.
  */
 
-import Link from 'next/link';
 import OrdersTable from './orders/OrdersTable';
 import StatCard from '../../../components/StatCard';
 import { getDashboardStats } from '../../../lib/dashboard/service';

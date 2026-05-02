@@ -15,6 +15,7 @@
 		"@workspace/supabase": "*",
 		"@workspace/tailwind-config": "*",
 		"@workspace/ui": "*",
+		"@workspace/utils": "*",
 		"@workspace/validations": "*",
 		"@supabase/ssr": "^0.10.2",
 		"@supabase/supabase-js": "^2.104.0",

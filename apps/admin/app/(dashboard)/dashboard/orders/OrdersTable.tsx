@@ -46,7 +46,7 @@ export default async function OrdersTable({ limit, userId }: OrdersTableProps) {
 	}
 
 	const orders = result.data
-
+	console.log(orders)
 	return (
 		<div className="overflow-x-auto mt-4 bg-white rounded-xl border border-gray-200">
 			<table className="w-full text-left border-collapse">
@@ -67,10 +67,10 @@ export default async function OrdersTable({ limit, userId }: OrdersTableProps) {
 							</td>
 							<td className="px-6 py-4">
 								<div className="text-sm font-medium text-gray-900">
-									{order.profiles?.full_name ?? '—'}
+									{order.user?.full_name ?? '—'}
 								</div>
 								<div className="text-xs text-gray-500">
-									{order.profiles?.email ?? '—'}
+									{order.user?.email ?? '—'}
 								</div>
 							</td>
 							<td className="px-6 py-4 text-sm font-semibold text-gray-900">

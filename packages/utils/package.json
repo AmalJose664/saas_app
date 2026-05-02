@@ -1,0 +1,15 @@
+{
+	"name": "@workspace/utils",
+	"version": "0.0.0",
+	"private": true,
+	"main": "./index.ts",
+	"types": "./index.ts",
+	"exports": {
+		".": "./index.ts",
+		"./react": "./src/react.tsx",
+		"./format": "./src/format.ts"
+	},
+	"dependencies": {
+		"react": "^19.2.4"
+	}
+}

@@ -28,10 +28,9 @@
 'use client';
 
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
-import ConfirmationModal from '@workspace/ui/ConfirmModel';
 import { useDeletePlan } from '../lib/plans/hooks';
-
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
+import { Button } from '@workspace/ui/components/button';
 /** Props for the DeletePlanButton component */
 interface DeletePlanButtonProps {
 	/** Supabase plan.id to delete */
@@ -55,45 +54,31 @@ export default function DeletePlanButton({ planId }: DeletePlanButtonProps) {
 
 	return (
 		<>
-			<button
-				onClick={() => setIsOpen(true)}
-				className="text-sm font-medium py-2 px-3 text-red-600 hover:bg-red-50 rounded transition"
-			>
-				Delete
-			</button>
-
-			{isOpen && createPortal(
-				<div
-					style={{
-						position: 'fixed',
-						inset: 0,
-						zIndex: 9999,
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						backgroundColor: 'rgba(0, 0, 0, 0.5)',
-					}}
-					onClick={() => setIsOpen(false)}
-				>
-					<div
-						onClick={(e) => e.stopPropagation()}
-						style={{ position: 'relative', zIndex: 10000, maxWidth: '480px', width: '100%' }}
-					>
-						<ConfirmationModal
-							isOpen={isOpen}
-							title="Delete Plan?"
-							subtext="This action is permanent and will remove this plan from your dashboard. Continue?"
-							confirmText="Delete"
-							cancelText="Go Back"
-							variant="danger"
-							isLoading={isPending}
-							onCancel={() => setIsOpen(false)}
-							onConfirm={handleDelete}
-						/>
+			<Dialog>
+				<DialogTrigger asChild>
+					<Button variant="destructive" disabled={isPending}>
+						{isPending ? "Deleting" : "Delete"}
+					</Button>
+				</DialogTrigger>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle className="text-xl">
+							Are you absolutely sure?
+						</DialogTitle>
+						<DialogDescription>
+							This action cannot be undone. This will permanently delete your subscription.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex items-center gap-4">
+						<DialogClose className='border px-3 py-2 rounded-md'>
+							Cancel
+						</DialogClose>
+						<Button variant="destructive" onClick={handleDelete}>
+							Delete
+						</Button>
 					</div>
-				</div>,
-				document.body
-			)}
+				</DialogContent>
+			</Dialog>
 		</>
 	)
 }

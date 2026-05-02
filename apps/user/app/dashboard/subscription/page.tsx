@@ -169,7 +169,7 @@ export default async function SubscriptionPage() {
 							</div>
 						)}
 
-						{subscription.cancel_at_period_end ? (
+						{!subscription.cancel_at_period_end ? (
 							<div className="bg-orange-50 border border-orange-200 rounded-xl p-6 text-center">
 								<p className="text-sm font-semibold text-orange-800 mb-2">
 									⚠️ Cancellation Scheduled
@@ -178,17 +178,11 @@ export default async function SubscriptionPage() {
 									Your subscription is scheduled to be cancelled at the end of the current billing period on{' '}
 									<span className="font-semibold">{periodEnd}</span>. You will continue to have access until then.
 								</p>
-								<CancelSubscriptionButton currentSubscriptionId={subscription.id} btnText='Cancel Now' cancelAtCycleEnd={false} />
+								<CancelSubscriptionButton currentSubscriptionId={subscription.id} btnText='Cancel Now' />
 							</div>
 						) : (
 							<>
-								<div className="flex gap-4 pt-6 border-t border-gray-100">
-									<Link
-										href="/dashboard/upgrade"
-										className="flex-1 text-center py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all"
-									>
-										Upgrade Plan
-									</Link>
+								<div className="pt-6 border-t border-gray-100">
 									<CancelSubscriptionButton currentSubscriptionId={subscription.id} />
 								</div>
 								<p className="text-xs text-gray-500 text-center mt-3">
