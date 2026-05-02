@@ -10,17 +10,13 @@
  * EditProfilePage (Server Component) — fetches data, handles auth redirect
  *   └── EditProfileForm (Client Component) — form state, live preview, mutation
  */
-import { createClient } from '@myapp/supabase/server'
+import { getAuthUser } from '../../../lib/auth/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import EditProfileForm from './EditProfileForm'
 
 export default async function EditProfilePage() {
-	const supabase = await createClient()
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser()
+	const { user, supabase } = await getAuthUser()
 
 	if (!user) {
 		redirect('/login')

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@myapp/supabase/admin'
+import { createClient } from '@myapp/supabase/server'
 import type { TablesInsert } from '@repo/database'
 
 /**
@@ -12,6 +13,18 @@ import type { TablesInsert } from '@repo/database'
  */
 
 // ─── Reads ────────────────────────────────────────────────────────────────────
+
+export async function dbGetPaymentsByUserId(userId: string) {
+	const supabase = await createClient()
+	return supabase
+		.from('payments')
+		.select('*, subscriptions!inner(user_id, plan_id, razorpay_subscription_id)')
+		.eq('subscriptions.user_id', userId)
+		.order('created_at', { ascending: false })
+}
+
+
+// ─── Admin / service-role ──────────────────────────────────
 
 export async function dbGetPaymentById(id: string) {
 	return supabaseAdmin
@@ -41,18 +54,11 @@ export async function dbGetPaymentsBySubscriptionId(subscriptionId: string) {
 		.order('created_at', { ascending: false })
 }
 
-/**
- * Get all payments for a user by joining through subscriptions.
- * Returns payments with their linked subscription data.
- */
-export async function dbGetPaymentsByUserId(userId: string) {
-	return supabaseAdmin
-		.from('payments')
-		.select('*, subscriptions!inner(user_id, plan_id, razorpay_subscription_id)')
-		.eq('subscriptions.user_id', userId)
-		.order('created_at', { ascending: false })
-}
 
+/**
+ * Create new payment record.
+ * Returns payment record that was created.
+ */
 // ─── Writes ───────────────────────────────────────────────────────────────────
 
 export async function dbCreatePayment(data: TablesInsert<'payments'>) {

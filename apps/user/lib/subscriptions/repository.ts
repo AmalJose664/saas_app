@@ -37,6 +37,24 @@ export async function dbGetSubscriptionsByUserId(userId: string) {
 		.order('created_at', { ascending: false })
 }
 
+/**
+ * Get the user's current active subscription.
+ * Returns the most recent subscription with status 'active'.
+ * Includes the plan details via join.
+ */
+export async function dbGetCurrentSubscription(userId: string, withPlan: boolean = true) {
+	const supabase = await createClient()
+	const selectText = withPlan ? '*, plan(*)' : "*"
+	return supabase
+		.from('subscriptions')
+		.select(selectText)
+		.eq('user_id', userId)
+		.eq('status', 'active')
+		.order('created_at', { ascending: false })
+		.limit(1)
+		.maybeSingle()
+}
+
 export async function dbUpdateSubscription(id: string, data: TablesUpdate<'subscriptions'>) {
 	const supabase = await createClient()
 	return supabase

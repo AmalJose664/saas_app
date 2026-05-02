@@ -8,17 +8,13 @@
  * Displays: avatar, full name, username, email, member since date.
  * Links to /profile/edit for making changes.
  */
-import { createClient } from '@myapp/supabase/server'
+import { getAuthUser } from '../../lib/auth/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default async function ProfilePage() {
-	const supabase = await createClient()
-
-	const {
-		data: { user },
-	} = await supabase.auth.getUser()
+	const { user, supabase } = await getAuthUser()
 
 	if (!user) {
 		redirect('/login')

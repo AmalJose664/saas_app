@@ -15,7 +15,7 @@
  *
  * @param children - the page content rendered by the matched route
  */
-import { createClient } from "@myapp/supabase/server";
+import { getAuthUser } from "../../lib/auth/server"
 import Logout from "@repo/ui/Logout"
 import Link from "next/link";
 
@@ -24,8 +24,7 @@ export default async function DashboardLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	const supabase = await createClient();
-	const { data: { user } } = await supabase.auth.getUser();
+	const { user } = await getAuthUser();
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<nav className="bg-white border-b border-gray-100 px-6 py-4">

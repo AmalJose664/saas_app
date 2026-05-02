@@ -3,6 +3,7 @@ import type { CreateSubscriptionInput } from '@repo/validations'
 import {
 	dbGetSubscriptionById,
 	dbGetSubscriptionsByUserId,
+	dbGetCurrentSubscription,
 	dbCreateNewSubscription,
 	dbUpdateSubscription,
 	dbDeleteSubscription,
@@ -28,13 +29,20 @@ import {
 // ─── Domain types ─────────────────────────────────────────────────────────────
 
 export type Subscription = Tables<'subscriptions'>
+export type Plan = Tables<'plan'>
+
+/** Subscription with plan details joined */
+export type SubscriptionWithPlan = Subscription & {
+	plan: Plan
+}
 
 export type ServiceResult<T> =
 	| { success: true; data: T }
 	| { success: false; error: string }
 
 export type GetSubscriptionResult = ServiceResult<Subscription | null>
-export type GetSubscriptionsResult = ServiceResult<Subscription[]>
+export type GetSubscriptionsResult = ServiceResult<SubscriptionWithPlan[]>
+export type GetSubscriptionWithPlanResult = ServiceResult<SubscriptionWithPlan | null>
 
 // ─── Reads (session-based) ────────────────────────────────────────────────────
 
@@ -47,7 +55,22 @@ export async function getSubscriptionById(id: string): Promise<GetSubscriptionRe
 export async function getSubscriptionsByUserId(userId: string): Promise<GetSubscriptionsResult> {
 	const { data, error } = await dbGetSubscriptionsByUserId(userId)
 	if (error) return { success: false, error: error.message }
-	return { success: true, data: data ?? [] }
+	return { success: true, data: (data ?? []) as SubscriptionWithPlan[] }
+}
+
+/**
+ * getCurrentSubscription — fetches the user's current active subscription.
+ *
+ * Returns the most recent subscription with status 'active'.
+ *
+ *
+ * @param userId - The user's ID
+ * @returns ServiceResult with subscription + plan data, or null if no active subscription
+ */
+export async function getCurrentSubscription(userId: string, withPlan?: boolean): Promise<GetSubscriptionWithPlanResult> {
+	const { data, error } = await dbGetCurrentSubscription(userId, withPlan)
+	if (error) return { success: false, error: error.message }
+	return { success: true, data: data as SubscriptionWithPlan | null }
 }
 
 // ─── Writes (session-based) ───────────────────────────────────────────────────

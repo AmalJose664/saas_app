@@ -15,7 +15,8 @@
 
 # production
 /build
-
+events/
+events/*
 # misc
 .DS_Store
 *.pem
