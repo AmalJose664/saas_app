@@ -2,19 +2,24 @@
  * @file app/payment/success/page.tsx
  * @description Payment success page displayed after successful Razorpay subscription payment
  */
-
+"use client"
 import Link from 'next/link'
 import { CheckCircle, ArrowRight } from 'lucide-react'
 import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 function SuccessContent() {
+	const searchParams = useSearchParams()
+	const subscriptionId = searchParams.get('subscription_id')
+	const viewSubscriptionLink = subscriptionId 
+		? `/dashboard/subscriptions/${subscriptionId}` 
+		: "/dashboard/subscriptions"
+
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-			<div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
+		<div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+			<div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
 				<div className="mb-6 flex justify-center">
-					<div className="bg-green-100 rounded-full p-4">
-						<CheckCircle className="w-16 h-16 text-green-600" />
-					</div>
+					<CheckCircle className="w-12 h-12 text-blue-600" />
 				</div>
 
 				<h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -35,7 +40,7 @@ function SuccessContent() {
 					</Link>
 
 					<Link
-						href="/dashboard/subscriptions"
+						href={viewSubscriptionLink}
 						className="block w-full bg-gray-100 text-gray-800 py-3 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
 					>
 						View Subscription Details
@@ -55,9 +60,9 @@ function SuccessContent() {
 export default function PaymentSuccessPage() {
 	return (
 		<Suspense fallback={
-			<div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
 				<div className="text-center">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
 					<p className="mt-4 text-gray-600">Loading...</p>
 				</div>
 			</div>

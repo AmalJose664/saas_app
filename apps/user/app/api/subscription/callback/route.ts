@@ -11,9 +11,13 @@ import crypto from "crypto"
 
 
 export async function POST(request: NextRequest) {
+	const redirectWithSession = (url: URL) => {
+		const response = NextResponse.redirect(url)
+		response.cookies.set('payment_session', 'valid', { maxAge: 300, path: '/' })
+		return response
+	}
+
 	try {
-
-
 		const formData = await request.formData();
 
 		const razorpay_payment_id = formData.get('razorpay_payment_id') as string;
@@ -27,7 +31,7 @@ export async function POST(request: NextRequest) {
 
 		if (generatedSignature !== razorpay_signature) {
 			// Invalid signature - redirect to failure page
-			return NextResponse.redirect(new URL('/payment/failure?reason=Invalid_Signature', request.url));
+			return redirectWithSession(new URL('/payment/failure?reason=Invalid_Signature', request.url));
 		}
 
 		// Get the authenticated user
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest) {
 		const { data: { user }, error: authError } = await supabase.auth.getUser()
 
 		if (authError || !user) {
-			return NextResponse.redirect(
+			return redirectWithSession(
 				new URL('/payment/failure?reason=authentication_failed', request.url)
 			)
 		}
@@ -44,7 +48,7 @@ export async function POST(request: NextRequest) {
 		const subscriptionResult = await getSubscriptionByRazorpayId(razorpay_subscription_id)
 
 		if (!subscriptionResult.success || !subscriptionResult.data || subscriptionResult.data.user_id !== user.id) {
-			return NextResponse.redirect(
+			return redirectWithSession(
 				new URL('/payment/failure?reason=subscription_not_found', request.url)
 			)
 		}
@@ -56,10 +60,10 @@ export async function POST(request: NextRequest) {
 		successUrl.searchParams.set('subscription_id', subscription.id)
 		successUrl.searchParams.set('payment_id', razorpay_payment_id)
 
-		return NextResponse.redirect(successUrl)
+		return redirectWithSession(successUrl)
 	} catch (error) {
 		console.error('Subscription callback error:', error)
-		return NextResponse.redirect(
+		return redirectWithSession(
 			new URL('/payment/failure?reason=server_error', request.url)
 		)
 	}

@@ -43,12 +43,10 @@ function FailureContent() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-			<div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
+		<div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+			<div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
 				<div className="mb-6 flex justify-center">
-					<div className="bg-red-100 rounded-full p-4">
-						<XCircle className="w-16 h-16 text-red-600" />
-					</div>
+					<XCircle className="w-12 h-12 text-red-500" />
 				</div>
 
 				<h1 className="text-3xl font-bold text-gray-900 mb-4">
@@ -99,9 +97,9 @@ function FailureContent() {
 export default function PaymentFailurePage() {
 	return (
 		<Suspense fallback={
-			<div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
 				<div className="text-center">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
 					<p className="mt-4 text-gray-600">Loading...</p>
 				</div>
 			</div>

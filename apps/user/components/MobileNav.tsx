@@ -6,7 +6,7 @@
 "use client"
 
 import { useState } from "react"
-import DashboardNav from "./DashboardNav"
+import DashboardNav from "./DashboardSidebar"
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false)

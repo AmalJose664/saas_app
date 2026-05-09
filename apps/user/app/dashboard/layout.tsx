@@ -8,7 +8,7 @@
 import { getAuthUser } from "../../lib/auth/server"
 import Logout from "@workspace/ui/my-components/Logout"
 import Link from "next/link";
-import DashboardNav from "../../components/DashboardNav";
+import DashboardNav from "../../components/DashboardSidebar";
 import MobileNav from "../../components/MobileNav";
 
 export default async function DashboardLayout({
