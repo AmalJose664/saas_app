@@ -10,14 +10,14 @@ import { Home, CreditCard, Receipt, Package, User, List } from "lucide-react"
 
 const navItems = [
 	{ name: "Dashboard", href: "/dashboard", icon: Home },
-	{ name: "Current Plan", href: "/dashboard/subscription", icon: CreditCard },
+	{ name: "Active Plans", href: "/dashboard/active-plans", icon: CreditCard },
 	{ name: "Subscriptions", href: "/dashboard/subscriptions", icon: List },
 	{ name: "Orders", href: "/dashboard/orders", icon: Package },
 	{ name: "Payments", href: "/dashboard/payments", icon: Receipt },
 	{ name: "Profile", href: "/profile", icon: User },
 ]
 
-export default function DashboardNav() {
+export default function DashboardSidebar() {
 	const pathname = usePathname()
 
 	return (

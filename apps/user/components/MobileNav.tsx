@@ -6,7 +6,7 @@
 "use client"
 
 import { useState } from "react"
-import DashboardNav from "./DashboardSidebar"
+import DashboardSidebar from "./DashboardSidebar"
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false)
@@ -47,7 +47,7 @@ export default function MobileNav() {
 					<span className="text-xl font-bold text-blue-600 tracking-tight">SaaS App</span>
 				</div>
 				<div className="p-4 flex-grow overflow-y-auto" onClick={() => setIsOpen(false)}>
-					<DashboardNav />
+					<DashboardSidebar />
 				</div>
 			</aside>
 		</>

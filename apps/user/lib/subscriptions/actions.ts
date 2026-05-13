@@ -2,7 +2,7 @@
 
 import { getRazorpay } from '@workspace/razorpay'
 import { getPlanById } from '../plans/service'
-import { createNewSubscription, getCurrentSubscription, getSubscriptionById, updateSubscriptionByIdAdmin } from './service'
+import { createNewSubscription, getCurrentSubscription, getSubscriptionById, updateSubscriptionByIdAdmin, getSubscriptionsByUserId } from './service'
 import { getAuthUser } from '../auth/server'
 
 /**
@@ -17,6 +17,9 @@ import { getAuthUser } from '../auth/server'
  *
  * The subscription starts as 'pending' in the DB.
  * A webhook (to be wired up) will update it to 'active' once payment completes.
+ * 
+ * Also exposes wrappers (e.g. getCurrentSubscriptionAction) around service
+ * functions to be used as `queryFn` within TanStack Query in Client Components.
  */
 export type SubscribeResult =
 	| { success: true; data: { checkoutUrl: string, subscriptionId: string, interval?: string } }
@@ -136,4 +139,12 @@ export async function cancelSubscription(subscriptionId: string, cancelAtCycleEn
 	}
 
 	return { success: true }
+}
+
+export async function getCurrentSubscriptionAction(userId: string, withPlan?: boolean) {
+	return getCurrentSubscription(userId, withPlan)
+}
+
+export async function getSubscriptionsByUserIdAction(userId: string) {
+	return getSubscriptionsByUserId(userId)
 }

@@ -275,10 +275,10 @@ export default async function PaymentsPage() {
 					{/* Quick Links */}
 					<div className="mt-8 flex justify-center gap-4">
 						<Link
-							href="/dashboard/subscription"
+							href="/dashboard/active-plans"
 							className="text-blue-600 hover:text-blue-700 font-medium"
 						>
-							← Back to Subscription
+							← Back to Active Plans
 						</Link>
 						<span className="text-gray-300">|</span>
 						<Link

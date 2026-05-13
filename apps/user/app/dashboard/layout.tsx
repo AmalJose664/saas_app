@@ -8,7 +8,7 @@
 import { getAuthUser } from "../../lib/auth/server"
 import Logout from "@workspace/ui/my-components/Logout"
 import Link from "next/link";
-import DashboardNav from "../../components/DashboardSidebar";
+import DashboardSidebar from "../../components/DashboardSidebar";
 import MobileNav from "../../components/MobileNav";
 
 export default async function DashboardLayout({
@@ -27,7 +27,7 @@ export default async function DashboardLayout({
 					<span className="text-xl font-bold text-blue-600 tracking-tight">SaaS App</span>
 				</div>
 				<div className="p-4 flex-grow">
-					<DashboardNav />
+					<DashboardSidebar />
 				</div>
 			</aside>
 

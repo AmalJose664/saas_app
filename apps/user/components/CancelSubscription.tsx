@@ -68,14 +68,22 @@ const CancelSubscriptionButton = ({ currentSubscriptionId, btnText }: {
 							This action cannot be undone. This will permanently delete your subscription.
 						</DialogDescription>
 					</DialogHeader>
-					<div className="flex items-center gap-4 flex-col">
-						<Button variant="outline" disabled={loading} onClick={() => handleClick(false)}>
-							{loading ? "Loading..." : btnText || "Cancel Subscription now"}
-						</Button>
-						<Button variant="outline" disabled={loading} onClick={() => handleClick(true)}>
-							{loading ? "Loading..." : btnText || "Cancel Subscription at billing end"}
-						</Button>
-					</div>
+					{loading ? (
+						<div className="flex flex-col items-center justify-center py-8 space-y-4">
+							<div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+							<p className="text-sm font-medium text-gray-600 animate-pulse">Processing cancellation...</p>
+						</div>
+					) : (
+
+						<div className="flex items-center gap-4 flex-col">
+							<Button variant="outline" disabled={loading} onClick={() => handleClick(false)}>
+								Cancel Subscription now
+							</Button>
+							<Button variant="outline" disabled={loading} onClick={() => handleClick(true)}>
+								Cancel Subscription at billing end
+							</Button>
+						</div>
+					)}
 				</DialogContent>
 			</Dialog>
 		</>
